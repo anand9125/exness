@@ -1,0 +1,24 @@
+What is OHLC?
+
+Open → First price in the interval.
+
+High → Maximum price.
+
+Low → Minimum price.
+
+Close → Last price.
+
+TimescaleDB can calculate OHLC easily using:
+
+FIRST(column, time) → first value in the bucket.
+
+LAST(column, time) → last value in the bucket.
+
+MAX(column) → highest value.
+
+MIN(column) → lowest value.
+
+How?
+
+We use continuous aggregates (materialized views) with time_bucket function.
+

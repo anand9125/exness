@@ -1,0 +1,131 @@
+A callback is just a function that you pass into another function.
+Later, that function gets called automatically when something happens.
+
+function greet(callback: (name: string) => void) {
+  const user = "Anand";
+  callback(user); // instead of printing, we give "Anand" to whoever calls greet
+}
+Here callback is a function we will pass in later.
+
+callback(user) means:
+👉 “Hey, I’ve got the user’s name. You decide what to do with it.”
+
+When we call greet, we pass a function:
+greet((name) => {
+  console.log("Hello " + name);
+});
+(name) => { console.log("Hello " + name); } is our callback.
+
+Inside greet, it runs callback("Anand").
+
+That becomes: console.log("Hello Anand").
+ Output: Hello Anand.
+
+
+
+
+ const p = new Promise((resolve, reject) => {
+  setTimeout(() => {
+    resolve("Done!");
+  }, 2000);
+});
+
+p.then(result => console.log(result)); // prints "Done!" after 2s
+
+new Promise(...) takes a function with two arguments: resolve (success) and reject (failure).
+After 2 seconds, we call resolve("Done!")
+Whoever was waiting on the promise will now get "Done!".
+
+
+
+
+
+
+Bucket part => 🔎 Step by step with example
+
+Say you have:
+
+tsMs = 16:03:25 (in ms)
+
+minutes = 5
+
+Convert 5 minutes → ms:
+
+5 * 60_000 = 300000 ms
+
+
+Divide the timestamp by bucket size:
+
+tsMs / 300000 ≈ 53.34
+
+
+Math.floor(53.34) = 53
+(floor pushes it down to the full bucket start)
+
+Multiply back by 300000:
+
+53 * 300000 = 15:55:00
+
+
+✅ So any tick at 16:03:25 gets assigned to the 15:55–16:00 candle.
+
+📊 Why it matters
+
+This is how your system decides which candle a tick belongs to.
+Without this “bucketing,” ticks would just be floating around.
+
+It’s the foundation of candle building.
+
+
+
+
+now clear everything=> 
+
+Take a timestamp in milliseconds (tsMs) → e.g., 16:03:25.
+
+Take a time interval in minutes (minutes) → e.g., 5.
+
+Calculate:
+
+minutes * 60_000 = bucket size in ms (for 5 min → 300000).
+
+tsMs / bucketSize → figure out how many full buckets have passed.
+
+Math.floor(...) → round down to the nearest full bucket.
+
+Multiply back by bucket size → gives you the bucket start time.
+
+👉 So basically: “Snap this timestamp back to the start of its time block.”
+
+Why we need it
+
+We need it because candlesticks (OHLCV charts) work in fixed time windows.
+
+Example:
+
+A 5-minute candle means all ticks that happen between 16:00 and 16:04:59 belong to the 16:00 candle.
+
+Without bucketing, ticks at 16:01, 16:02, 16:03 would look like they belong to different times → chaos ❌.
+
+With bucketing, we group them neatly into one candle (16:00–16:04:59) ✅
+In super simple words
+
+This function is like saying:
+
+“Whatever time you give me, I’ll tell you which candle (time box) it belongs to.”.
+
+We are building time buckets of a fixed size (for example, 1 min, 3 min, 5 min, etc.) so that we can later use them to build candles.
+
+Whenever a new tick (with a timestamp) arrives:
+
+This function checks the tick’s timestamp.
+
+It calculates which bucket (time interval) that tick should belong to.
+
+Example:
+
+If bucket size = 5 minutes
+
+Tick arrives at 16:03:25
+
+Function will say → this tick belongs to the 16:00–16:05 bucket.
