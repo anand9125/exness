@@ -14,6 +14,7 @@ const TradingHeader = () => {
   return (
     <header className="bg-[#141920] border-b border-[#2a3441] h-16 flex items-center px-6 shadow-lg">
       {/* Logo and Brand */}
+      <div className='flex justify-between w-full'>
       <div className="flex items-center space-x-6">
         <div className="flex items-center space-x-2">
           <div className="text-[#ff6b00] text-2xl font-bold">exness</div>
@@ -22,7 +23,7 @@ const TradingHeader = () => {
           </div>
         </div>
         
-        {/* Navigation */}
+        Navigation
         <nav className="hidden md:flex items-center space-x-6">
           <button className="text-white hover:text-[#ff6b00] transition-colors text-sm font-medium">
             Trading
@@ -37,7 +38,7 @@ const TradingHeader = () => {
       </div>
       
       {/* Market Ticker */}
-      <div className="flex items-center ml-8 space-x-4 flex-1 overflow-x-auto">
+      {/* <div className="flex items-center ml-8 space-x-4 flex-1 overflow-x-auto">
         {topInstruments.map((instrument) => (
           <div key={instrument.id} className="flex items-center space-x-3 cursor-pointer hover:bg-[#1a1f26] px-3 py-2 rounded transition-colors min-w-fit">
             <div className="flex items-center space-x-2">
@@ -70,7 +71,7 @@ const TradingHeader = () => {
             </div>
           </div>
         ))}
-      </div>
+      </div> */}
 
       {/* User Section */}
       <div className="flex items-center space-x-4 ml-6">
@@ -128,6 +129,7 @@ const TradingHeader = () => {
         <button className="bg-[#ff6b00] hover:bg-[#e55a00] text-white px-4 py-2 rounded font-medium transition-colors">
           Deposit
         </button>
+      </div>
       </div>
     </header>
   );

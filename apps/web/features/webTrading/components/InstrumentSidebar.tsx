@@ -44,38 +44,10 @@ const InstrumentSidebar = ({ selectedInstrument, onSelectInstrument }: Instrumen
             <Star size={18} />
           </button>
         </div>
-        
-        {/* Search */}
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
-          <input
-            type="text"
-            placeholder="Search instruments..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full bg-[#1a1f26] border border-[#2a3441] rounded-lg pl-10 pr-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#ff6b00] transition-colors"
-          />
-        </div>
+    
       </div>
 
-      {/* Tabs */}
-      <div className="px-4 py-3 border-b border-[#2a3441]">
-        <div className="flex space-x-1">
-          {categories.map((category) => (
-            <button
-              key={category.key}
-              onClick={() => setActiveTab(category.key)}
-              className={`text-sm px-3 py-1.5 rounded transition-colors ${
-                activeTab === category.key 
-                  ? 'bg-[#ff6b00] text-white font-medium' 
-                  : 'text-gray-400 hover:text-white hover:bg-[#1a1f26]'
-              }`}
-            >
-              {category.label}
-            </button>
-          ))}
-        </div>
-      </div>
+    
 
       {/* Table Header */}
       <div className="px-4 py-3 border-b border-[#2a3441] bg-[#1a1f26]">

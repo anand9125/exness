@@ -21,11 +21,11 @@ export class RedisManager{
         await this.client.disconnect();
     }
 
-    async subscribe(pattern: string, callback: (message: string, channel: string) => void): Promise<void> {  //(pattern-based subscribe)
+    async subscribe(channel:string, callback: (message: string) => void): Promise<void> {  //(pattern-based subscribe)
           //This means you can subscribe to multiple Redis channels using a pattern. Whenever a message is published to one of those channels, your callback function runs.
         try {
-            await this.client.pSubscribe(pattern, callback);  //redis library internally listens for incoming messages from Redis server.When a message arrives, the library says:“Oh, the user gave me a function callback. I’ll call it now with the data.”So it does something like this (internally):callback("45000", "price:BTC");
-            console.log(`Subscribed to Redis pattern: ${pattern}`);
+            await this.client.subscribe(channel, callback);  //redis library internally listens for incoming messages from Redis server.When a message arrives, the library says:“Oh, the user gave me a function callback. I’ll call it now with the data.”So it does something like this (internally):callback("45000", "price:BTC");
+            console.log(`Subscribed to Redis pattern: ${channel}`);
         } catch (error) {
             console.error('Failed to subscribe to Redis:', error);
             throw error;

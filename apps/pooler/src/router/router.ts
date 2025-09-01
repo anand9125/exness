@@ -11,6 +11,9 @@ export async function scalewebsocket(data:Data){
     const bidPrice = fetchedPrice + fetchedPrice * bidPriceIncrementRate;
     const askPrice = fetchedPrice - fetchedPrice * askPriceDecrementRate;
     console.log("New price : ", bidPrice, askPrice);
-    await pub.publish("BTC" , JSON.stringify({symbol: "BTC", askPrice , bidPrice})); //BTC is redis channel
+
+    const symbol = data.s;
+    const channel = symbol.replace("USDT","")
+    await pub.publish(channel , JSON.stringify({symbol, askPrice , bidPrice})); //BTC is redis channel
     console.log("Published to Redis", bidPrice, askPrice);
 }

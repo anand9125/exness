@@ -5,6 +5,8 @@ import { WSMessage } from "../types/type";
 //WebSocketServer → lets you create a server that accepts WebSocket connections from clients
 export class WSManager{
     private wss:WebSocketServer; //declear a private wss property(variable) that hold the  WebSocketServer instance
+    private wssUrl: string | null = null;
+    onChannelSelected?: (channel: string) => void;
 
     constructor(port:number){
         this.wss = new WebSocketServer({port});
@@ -12,10 +14,18 @@ export class WSManager{
     }
 
     private setupEventHandlers(){
-        this.wss.on("connection",(ws:WebSocket,req)=>{   //A WebSocket server emits a "connection" event whenever a new WebSocket client (like a browser or app) connects to it.
-             //ws represents the WebSocket client that connected to the server.we can use it for (you use it to send or receive messages).
-            ws.send("You are connected to socket server");
-        })
+        this.wss.on("connection", (ws: WebSocket, req) => {
+        const channel = req.url ? req.url.replace("/", "") : null;
+
+        if (channel) {
+            console.log("Client connected, subscribing to Redis channel:", channel);
+            // Let Server know which channel to subscribe to
+            this.onChannelSelected?.(channel);
+        }
+
+        ws.send("You are connected to socket server");
+    });
+ 
     }
     private sendToClient(socket:WebSocket,message:WSMessage){
         if(socket.readyState == WebSocket.OPEN){
@@ -43,6 +53,9 @@ export class WSManager{
     }   
     getServer():WebSocketServer{
         return this.wss;
-    }                    
+    } 
+    getUrl():string|null{
+        return this.wssUrl;
+    }                   
     
 }

@@ -12,16 +12,20 @@ class Server{
     private dataStore:DataStore;
     private intervals = [];
     private isShuttingDown = false;
+
     constructor(){
         this.wsManager = new WSManager(WS_PORT);
         this.redisManager = new RedisManager(REDIS_URL);
         this.dataStore = new DataStore();
+        this.wsManager.onChannelSelected = async(channel:string)=>{
+            await this.setUpRedisSubscriptions(channel);
+        }
     }
     async start(){
         try{
             console.log("Starting server...");
             await this.redisManager.connect();
-            await this.setUpRedisSubscriptions();
+            const channel= this.wsManager.getUrl() as string;
 
             //starts backgorugund tasks
             this.startPeriodicTasks()
@@ -32,8 +36,8 @@ class Server{
             console.error(e);
         }
     }
-    private async setUpRedisSubscriptions(){
-        this.redisManager.subscribe("*",(message:string,channel:string)=>{
+    private async setUpRedisSubscriptions(channel:string){
+        this.redisManager.subscribe(channel,(message:string)=>{
            if(this.isShuttingDown)return;
            try{
             const tick = JSON.parse(message);

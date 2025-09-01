@@ -28,7 +28,7 @@ router.get("/candles",async(req:Request,res:Response)=>{
       console.error("Error fetching candles:", err);
       res.status(500).json({ error: "Internal server error" });
     }
-  });
+});
 
 
 export const getCandlesData = router;
