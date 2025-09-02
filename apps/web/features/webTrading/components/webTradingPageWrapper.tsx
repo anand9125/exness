@@ -8,12 +8,13 @@ import InstrumentSidebar from './InstrumentSidebar';
 import TradeChart from './tradeView';
 import TradingPanel from './TradingPanel';
 import { CandleTick, GlobalTick } from './interfaces';
+import Footer from './footer';
 
 const WebTradingPageWrapper = () => {
   // const [selectedInstrument, setSelectedInstrument] = useState<TradingInstrument | null>(
   //   mockInstruments.find((instrument: TradingInstrument) => instrument.symbol === 'XAU/USD') || null
   // );
-  const[selectedTick,setSelectedTick] = useState<string>("")
+  const[selectedTick,setSelectedTick] = useState<string>("BSTUSDT")
 
   return (
     <div className="trading-layout flex flex-col h-screen">
@@ -24,12 +25,12 @@ const WebTradingPageWrapper = () => {
           
           
         />
-        {JSON.stringify(selectedTick)}
-        <div className="flex-1 flex flex-col">
+        <div className="flex-1 flex flex-col max-h-3/4">
           <TradeChart selectedTick={selectedTick} />
+          <Footer></Footer>
         </div>
-{/*         
-        <TradingPanel selectedTick ={selectedTick}/> */}
+        
+        <TradingPanel selectedTick ={selectedTick}/>
       </div>
     </div>
   );

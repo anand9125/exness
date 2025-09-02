@@ -2,24 +2,27 @@
 import { useState } from 'react';
 import { TradingInstrument } from '@repo/common';
 import { Settings, Plus, Minus, TrendingUp, TrendingDown } from 'lucide-react';
+import { useTickStore } from '../../../app/zustand/store';
 
 interface TradingPanelProps {
-  selectedInstrument: TradingInstrument | null;
+  selectedTick: string;
 }
 
-const TradingPanel = ({ selectedInstrument }: TradingPanelProps) => {
+const TradingPanel = ({ selectedTick }: TradingPanelProps) => {
+  const candleTick  = useTickStore((state)=>state.candleTick)
   const [orderType, setOrderType] = useState<'buy' | 'sell'>('buy');
   const [volume, setVolume] = useState('0.01');
   const [takeProfit, setTakeProfit] = useState('');
   const [stopLoss, setStopLoss] = useState('');
   const [activeTab, setActiveTab] = useState<'open' | 'pending' | 'closed'>('open');
 
-  const formatPrice = (price: number) => {
-    if (!selectedInstrument) return price.toFixed(2);
-    return selectedInstrument.category === 'forex' 
-      ? price.toFixed(5) 
-      : price.toFixed(2);
-  };
+  // const formatPrice = (price: number) => {
+  //   if (!selectedTick) return price.toFixed(2);
+  //   return selectedTick.category === 'forex' 
+  //     ? price.toFixed(5) 
+  //     : price.toFixed(2);
+  // };
+  
 
   const incrementVolume = () => {
     setVolume((prev) => (parseFloat(prev) + 0.01).toFixed(2));
@@ -34,16 +37,16 @@ const TradingPanel = ({ selectedInstrument }: TradingPanelProps) => {
       {/* Current Price Display */}
       <div className="p-6 border-b border-[#2a3441]">
         <div className="text-center mb-6">
-          <div className="text-white text-3xl font-mono font-bold mb-2">
+          {/* <div className="text-white text-3xl font-mono font-bold mb-2">
             {selectedInstrument ? formatPrice(selectedInstrument.price) : '3,400.000'}
           </div>
           <div className="text-gray-400 text-sm font-medium">
             {selectedInstrument?.symbol || 'XAU/USD'}
-          </div>
-          <div className={`text-sm font-medium mt-1 ${selectedInstrument?.change && selectedInstrument.change >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+          </div> */}
+          {/* <div className={`text-sm font-medium mt-1 ${selectedInstrument?.change && selectedInstrument.change >= 0 ? 'text-green-400' : 'text-red-400'}`}>
             {selectedInstrument?.change && selectedInstrument.change >= 0 ? '+' : ''}
             {selectedInstrument?.changePercent?.toFixed(2) || '+0.25'}%
-          </div>
+          </div> */}
         </div>
         
         <div className="grid grid-cols-2 gap-4">
@@ -53,7 +56,7 @@ const TradingPanel = ({ selectedInstrument }: TradingPanelProps) => {
               <span className="text-red-400 text-xs font-medium">SELL</span>
             </div>
             <div className="text-red-400 text-lg font-mono font-bold">
-              {selectedInstrument ? formatPrice(selectedInstrument.bid) : '3,395.255'}
+             {candleTick[selectedTick]?.askPrice?.toFixed(2)}
             </div>
           </div>
           <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-4 text-center">
@@ -62,7 +65,7 @@ const TradingPanel = ({ selectedInstrument }: TradingPanelProps) => {
               <span className="text-green-400 text-xs font-medium">BUY</span>
             </div>
             <div className="text-green-400 text-lg font-mono font-bold">
-              {selectedInstrument ? formatPrice(selectedInstrument.ask) : '3,396.061'}
+             {candleTick[selectedTick]?.bidPrice?.toFixed(2)}
             </div>
           </div>
         </div>

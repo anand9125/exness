@@ -39,9 +39,13 @@ class Server{
     }
 
     private async startListeningToRedis(){
-          this.redisManager.subscribeToAllChannels((message:WSMessage)=>{
+          this.redisManager.subscribeToAllChannels((message:string)=>{
+            const tick = JSON.parse(message);
            if(this.isShuttingDown)return;
-           this. wsManager.broadcast(message);
+           if(this.dataStore.shouldBroadCast(`tick:${tick.symbol}`, BROADCAST_THROTTLE_MS)){
+               this.wsManager.broadcast(tick);
+           }
+          
           })
     }
     private async setUpRedisSubscriptions(channel:string){

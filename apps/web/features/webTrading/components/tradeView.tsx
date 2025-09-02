@@ -4,7 +4,7 @@ import React, { useEffect, useRef } from 'react'
 import { ChartManager, UpdatedCandleData } from '../../../lib/chartManager';
 import { CandleTick, GlobalTick, WSMessage } from './interfaces';
 import { backendUrl } from '../../../lib/url';
-
+import { useTickStore } from '../../../app/zustand/store';
 interface KLine{
     close: string;
     end: string;
@@ -23,14 +23,11 @@ interface TradeChartProps {
 }
 
 const TradeChart = ({ selectedTick }: TradeChartProps) => {
-    
+     const setTick=  useTickStore((state)=>state.setCandleTick)
     const chartRef = useRef<HTMLDivElement>(null);
     const chartManagerRef = useRef<ChartManager>(null);
     const[interval, setInterval] = React.useState("1m")
     let symbol = selectedTick.toString()
-     
-    
-  
 
     useEffect(() => {
     let chartManager: ChartManager | null = null;
@@ -86,9 +83,11 @@ const TradeChart = ({ selectedTick }: TradeChartProps) => {
       const ws = new WebSocket(`ws://localhost:8080/${symbol}`);
       ws.onmessage = (event)=>{
         try {
-          console.log("event",event.data)
+        console.log("event",event.data)
         const msg:CandleTick = JSON.parse(event.data)
           if(msg.type =="tick" && msg.symbol == symbol){
+              setTick(msg)
+              console.log(msg)
               const candle= msg.candles[interval];
               if(!candle)return;
               const updatedCandle:UpdatedCandleData = {
@@ -110,7 +109,8 @@ const TradeChart = ({ selectedTick }: TradeChartProps) => {
       return ()=>{
         ws.close();
       }
-   },[interval,symbol])
+    
+   },[symbol,interval])
 
 
 

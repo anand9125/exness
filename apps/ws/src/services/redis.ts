@@ -34,18 +34,18 @@ export class RedisManager{
     getCLient(){
         return this.client;
     }
-    async subscribeToAllChannels(callback: (message: WSMessage) => void): Promise<void> {
+    async subscribeToAllChannels(callback: (message:string) => void): Promise<void> {
     try {
         await this.client.pSubscribe("*", (message, channel) => {
         console.log(`Got message from ${channel}: ${message}`);
         try {
-            const parsed: WSMessage = JSON.parse(message);
-            callback(parsed);
+            
+            callback(message);
         } catch (err) {
-            console.error("❌ Failed to parse Redis message:", err);
+            console.error(" Failed to parse Redis message:", err);
         }
         });
-        console.log("✅ Subscribed to all channels using pattern *");
+        console.log("Subscribed to all channels using pattern *");
     } catch (err) {
         console.error("Failed to pSubscribe:", err);
     }

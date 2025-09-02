@@ -24,7 +24,7 @@ type CandleTickStore = {
 
 export const useTickStore = create<CandleTickStore>((set)=>({
     candleTick:{},
-    setCandleTick:(tick:any)=>{
+    setCandleTick:(tick:CandleTick)=>{
         set((state)=>({
             candleTick:{...state.candleTick,[tick.symbol]:tick}
         }))

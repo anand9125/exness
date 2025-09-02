@@ -8,7 +8,7 @@ export function connectToSocket(){
    const setGlobalTick = useGlobalTickStore((state)=>state.setGlobalTick)
      
    useEffect (()=>{
-    const ws = new WebSocket("ws://localhost:8080/BTC");
+    const ws = new WebSocket("ws://localhost:8080");
     ws.onmessage = (event)=>{
         const msg:WSMessage = JSON.parse(event.data);
       //   console.log(msg);
