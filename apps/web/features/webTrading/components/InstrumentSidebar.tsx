@@ -1,39 +1,21 @@
 "use client";
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Search, Star } from 'lucide-react';
 import { mockInstruments } from '@repo/common';
 import { TradingInstrument } from '@repo/common';
-
+import { CandleTick, GlobalTick, WSMessage } from './interfaces';
+import { useGlobalTickStore, useTickStore } from '../../../app/zustand/store';
+//import {WebSocket} from 'ws';
 interface InstrumentSidebarProps {
-  selectedInstrument: TradingInstrument | null;
-  onSelectInstrument: (instrument: TradingInstrument) => void;
+  setSelectedTick: (symbol: string) => void;
 }
 
-const InstrumentSidebar = ({ selectedInstrument, onSelectInstrument }: InstrumentSidebarProps) => {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [activeTab, setActiveTab] = useState('all');
-
-  const filteredInstruments = mockInstruments.filter(instrument =>
-    instrument.symbol.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    instrument.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  const getChangeIcon = (change: number) => {
-    return change >= 0 ? '▲' : '▼';
-  };
-
-  const categories = [
-    { key: 'all', label: 'All' },
-    { key: 'forex', label: 'Forex' },
-    { key: 'crypto', label: 'Crypto' },
-    { key: 'stocks', label: 'Stocks' }
-  ];
-
-  const getCategoryInstruments = () => {
-    if (activeTab === 'all') return filteredInstruments;
-    return filteredInstruments.filter(instrument => instrument.category === activeTab);
-  };
-
+const InstrumentSidebar = ({ setSelectedTick }: InstrumentSidebarProps) => {
+   
+    const globalTick = useGlobalTickStore((state)=>state.gloabalTick)
+    const candleTick  = useTickStore((state)=>state.candleTick)
+  
+ 
   return (
     <div className="w-80 bg-[#141920] border-r border-[#2a3441] flex flex-col h-full">
       {/* Header */}
@@ -44,81 +26,41 @@ const InstrumentSidebar = ({ selectedInstrument, onSelectInstrument }: Instrumen
             <Star size={18} />
           </button>
         </div>
-    
       </div>
-
-    
-
-      {/* Table Header */}
+       <div className="w-full rounded-2xl overflow-hidden border border-[#2a3441]">
+    {/* Header */}
       <div className="px-4 py-3 border-b border-[#2a3441] bg-[#1a1f26]">
-        <div className="grid grid-cols-4 gap-2 text-xs text-gray-400 font-medium">
+        <div className="grid grid-cols-3 gap-2 text-xs text-gray-400 font-medium">
           <span>Symbol</span>
-          <span className="text-right">Trend</span>
           <span className="text-right">Bid</span>
           <span className="text-right">Ask</span>
         </div>
       </div>
 
-      {/* Instruments List */}
-      <div className="flex-1 overflow-y-auto trading-scrollbar">
-        {getCategoryInstruments().map((instrument) => (
+      {/* Rows */}
+      <div className="divide-y divide-[#2a3441] bg-[#0f1318]">
+        {Object.values(globalTick).map((row) => (
           <div
-            key={instrument.id}
-            onClick={() => onSelectInstrument(instrument)}
-            className={`px-4 py-3 border-b border-[#2a3441] cursor-pointer hover:bg-[#1a1f26] transition-colors ${
-              selectedInstrument?.id === instrument.id ? 'bg-[#1a1f26] border-l-2 border-l-[#ff6b00]' : ''
-            }`}
+            key={row.symbol}
+            onClick={() => setSelectedTick(row.symbol)}
+            className="grid grid-cols-3 gap-2 px-4 py-3 text-sm items-center cursor-pointer hover:bg-[#1c222b] "
           >
-            <div className="grid grid-cols-4 gap-2 items-center">
-              {/* Symbol */}
-              <div className="flex items-center space-x-2">
-                <div className={`w-2 h-2 rounded-full ${instrument.change >= 0 ? 'bg-green-400' : 'bg-red-400'}`}></div>
-                <div>
-                  <div className="text-white text-sm font-medium">
-                    {instrument.symbol}
-                  </div>
-                </div>
-              </div>
+            <span className="font-medium text-white">{row.symbol}</span>
 
-              {/* Trend */}
-              <div className="text-right">
-                <span className={`text-sm font-bold ${instrument.change >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                  {getChangeIcon(instrument.change)}
-                </span>
-              </div>
-
-              {/* Bid */}
-              <div className="text-right">
-                <span className="text-white text-sm font-mono">
-                  {instrument.bid.toFixed(instrument.category === 'forex' ? 5 : 2)}
-                </span>
-              </div>
-
-              {/* Ask */}
-              <div className="text-right">
-                <span className="text-white text-sm font-mono">
-                  {instrument.ask.toFixed(instrument.category === 'forex' ? 5 : 2)}
-                </span>
-              </div>
-            </div>
-
-            {/* Additional row with change info */}
-            <div className="grid grid-cols-4 gap-2 mt-2">
-              <div className="col-span-2">
-                <span className="text-xs text-gray-400">{instrument.name}</span>
-              </div>
-              <div className="col-span-2 text-right">
-                <span className={`text-xs font-medium ${instrument.change >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                  {instrument.change >= 0 ? '+' : ''}{instrument.change.toFixed(instrument.category === 'forex' ? 5 : 2)}
-                </span>
-                <span className={`text-xs ml-2 font-medium ${instrument.change >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                  ({instrument.change >= 0 ? '+' : ''}{instrument.changePercent.toFixed(2)}%)
-                </span>
-              </div>
-            </div>
+            <button className="text-right text-blue-400 hover:text-blue-300 cursor-pointer ">
+              {row.bidPrice?.toFixed(2)}
+            </button>
+            <button className="text-right text-yellow-400 hover:text-yellow-300 cursor-pointer">
+              {row.askPrice?.toFixed(2)}
+            </button>
           </div>
         ))}
       </div>
+
+
+    </div>
+
+       
     </div>
   );
 };

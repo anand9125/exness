@@ -12,6 +12,7 @@ export async function connectredis(){
       console.log("hii")
       
       const trade = JSON.parse(message); 
+      console.log("trade this is trade",trade)
       await pool.query(
       `INSERT INTO trades (time, symbol, bid_price, ask_price)
         VALUES (NOW(), $1, $2, $3)`,

@@ -1,7 +1,9 @@
 "use client";
 
 import React, { useEffect, useRef } from 'react'
-import { ChartManager } from '../../../lib/chartManager';
+import { ChartManager, UpdatedCandleData } from '../../../lib/chartManager';
+import { CandleTick, GlobalTick, WSMessage } from './interfaces';
+import { backendUrl } from '../../../lib/url';
 
 interface KLine{
     close: string;
@@ -14,88 +16,120 @@ interface KLine{
     trades: string;
     time: string;
     volume: string;
+    bucket:string
+}
+interface TradeChartProps {
+  selectedTick:string
 }
 
-const TradeChart = ({ market }: { market: string }) => {
+const TradeChart = ({ selectedTick }: TradeChartProps) => {
     
     const chartRef = useRef<HTMLDivElement>(null);
     const chartManagerRef = useRef<ChartManager>(null);
+    const[interval, setInterval] = React.useState("1m")
+    let symbol = selectedTick.toString()
+     
+    
+  
 
     useEffect(() => {
-        const init = async () => {
-            let kLinesData: KLine[] = [];
-            try {
-                const data = await fetch(`${process.env.NEXT_PUBLIC_API_SERVER}/api/candles?symbol=${market}&interval=1m`);
-                // http://localhost:3002/api/candles?symbol=ETHUSDT&interval=1m
-                kLinesData = await data.json();
+    let chartManager: ChartManager | null = null;
 
-            } catch (err) {
-                console.error("Error fetching k-lines data:", err);
-                return;
+    const init = async () => {
+      try {
+        const res = await fetch(
+          `${backendUrl}/candles?symbol=${symbol}&interval=${interval}&limit=100`
+        );
+        const kLinesData: KLine[] = await res.json();
+
+        if (!chartRef.current) return;
+        chartManagerRef.current?.destroy();
+        const processedCandles = kLinesData
+          .map(kline => {
+            const ts = new Date(kline.bucket).getTime();
+            return {
+              open: parseFloat(kline.open),
+              high: parseFloat(kline.high),
+              low: parseFloat(kline.low),
+              close: parseFloat(kline.close),
+              timestamp: ts,
+            };
+          })
+          .filter(candle => !isNaN(candle.timestamp))
+          .sort((a, b) => a.timestamp - b.timestamp)
+          .filter((candle, idx, arr) => idx === 0 || candle.timestamp > arr[idx - 1]!.timestamp);
+
+        // create new chart
+        chartManager = new ChartManager(chartRef.current, processedCandles, {
+          background: "#0a0e13",
+          color: "#ffffff",
+        });
+
+        chartManagerRef.current = chartManager;
+      } catch (err) {
+        console.error("Error fetching k-lines data:", err);
+      }
+    };
+
+    init();
+
+    return () => {
+      // destroy only the chart created by this effect
+      chartManager?.destroy();
+      if (chartManagerRef.current === chartManager) {
+        chartManagerRef.current = null;
+      }
+    };
+  }, [selectedTick,interval]);
+
+   useEffect(()=>{
+      const ws = new WebSocket(`ws://localhost:8080/${symbol}`);
+      ws.onmessage = (event)=>{
+        try {
+          console.log("event",event.data)
+        const msg:CandleTick = JSON.parse(event.data)
+          if(msg.type =="tick" && msg.symbol == symbol){
+              const candle= msg.candles[interval];
+              if(!candle)return;
+              const updatedCandle:UpdatedCandleData = {
+                open:candle.open.toString(),
+                high:candle.high.toString(),
+                low:candle.low.toString(),
+                close:candle.close.toString(),
+                timestamp:new Date(candle.startTime),
+              }
+              chartManagerRef.current?.updateData(updatedCandle)
             }
+          }catch(err){
+            console.error("Error parsing message:", err);
+          }
+      }
+      ws.onclose =()=>{
+        console.log("Connection closed");
+      }
+      return ()=>{
+        ws.close();
+      }
+   },[interval,symbol])
 
-            console.log("Fetched k-lines data:", kLinesData);
 
-            if (chartRef.current) {
-                if (chartManagerRef.current) {
-                    chartManagerRef.current.destroy();
-                }
-
-                const chartManager = new ChartManager(
-                    chartRef.current, 
-                    [
-                        ...kLinesData
-                            .map(kline => ({
-                                close: parseFloat(kline.close),
-                                high: parseFloat(kline.high),
-                                low: parseFloat(kline.low),
-                                open: parseFloat(kline.open),
-                                timestamp: new Date(kline.time).getTime(),
-                            }))
-                            .sort((a, b) => a.timestamp - b.timestamp),
-                        ],
-                        {
-                            background: "#0a0e13",
-                            color: "#ffffff",
-                        }
-                );
-
-                chartManagerRef.current = chartManager;
-            }
-            
-        }
-
-        
-        init();
-        return () => {
-            if (chartManagerRef.current) {
-                chartManagerRef.current.destroy();
-            }
-        }
-    },[market])
 
   return (
     <div className="flex-1 bg-[#0a0e13] border-r border-[#2a3441] relative">
-      {/* Chart Header */}
-      <div className="absolute top-4 left-4 z-10 bg-[#141920]/90 backdrop-blur-sm rounded-lg p-3 border border-[#2a3441]">
-        <div className="flex items-center space-x-4">
-          <div className="text-white font-bold text-lg">{market}</div>
-          <div className="text-green-400 text-sm font-medium">+2.45%</div>
-          <div className="text-gray-400 text-sm">1D</div>
-        </div>
-      </div>
+     
       
       {/* Chart Container */}
       <div ref={chartRef} className="w-full h-full" />
       
       {/* Chart Controls */}
-      <div className="absolute bottom-4 left-4 z-10 bg-[#141920]/90 backdrop-blur-sm rounded-lg p-2 border border-[#2a3441]">
+      <div className="absolute top-4 left-4 z-10 bg-[#141920]/90 backdrop-blur-sm rounded-lg p-2 border border-[#2a3441]">
         <div className="flex items-center space-x-2">
-          {['1m', '5m', '15m', '1h', '4h', '1D'].map((timeframe) => (
+          {['1m', '5m', '15m', '30m'].map((timeframe) => (
             <button
               key={timeframe}
               className="px-3 py-1 text-xs font-medium text-gray-400 hover:text-white hover:bg-[#2a3441] rounded transition-colors"
-            >
+              onClick={()=>setInterval(timeframe)}
+            >  
               {timeframe}
             </button>
           ))}

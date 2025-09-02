@@ -18,12 +18,12 @@ interface InitialCandleData {
   timestamp: number;
 }
 
-interface UpdatedCandleData {
+export interface UpdatedCandleData {
   open: string;
   high: string;
   low: string;
   close: string;
-  end: string;
+  timestamp:Date
 }
 
 export class ChartManager {
@@ -71,7 +71,7 @@ export class ChartManager {
       high: parseFloat(updatedData.high),
       low: parseFloat(updatedData.low),
       close: parseFloat(updatedData.close),
-      time: (new Date(updatedData.end).getTime() / 1000) as UTCTimestamp,
+      time: (new Date(updatedData.timestamp).getTime() / 1000) as UTCTimestamp,
     };
     this.candlestickSeries.update(newCandle);
   }

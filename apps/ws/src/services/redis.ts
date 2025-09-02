@@ -2,7 +2,7 @@ import { createClient, RedisClientType } from "redis";
 //we are using node redis client redis package
 //createCLient is a function that creates a new redis connection
 //RedisClientType → a TypeScript type that describes what a Redis client looks likeRedisClientType → a TypeScript type that describes what a Redis client looks like
-
+import {WSMessage} from "../types/type";
 export class RedisManager{
     private client:RedisClientType;  //you declare a variable client that holds your Redis connection.
     constructor(private url:string){
@@ -34,5 +34,25 @@ export class RedisManager{
     getCLient(){
         return this.client;
     }
+    async subscribeToAllChannels(callback: (message: WSMessage) => void): Promise<void> {
+    try {
+        await this.client.pSubscribe("*", (message, channel) => {
+        console.log(`Got message from ${channel}: ${message}`);
+        try {
+            const parsed: WSMessage = JSON.parse(message);
+            callback(parsed);
+        } catch (err) {
+            console.error("❌ Failed to parse Redis message:", err);
+        }
+        });
+        console.log("✅ Subscribed to all channels using pattern *");
+    } catch (err) {
+        console.error("Failed to pSubscribe:", err);
+    }
+    }
+
+  
+
+
 
 }

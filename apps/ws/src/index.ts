@@ -1,7 +1,7 @@
 import { DataStore } from "./services/datastore";
 import { RedisManager } from "./services/redis";
 import { WSManager } from "./services/websocket";
-
+import {WSMessage} from "./types/type";
 const WS_PORT = 8080;
 const REDIS_URL = "redis://localhost:6379";
 const BROADCAST_THROTTLE_MS = 200;
@@ -26,15 +26,23 @@ class Server{
             console.log("Starting server...");
             await this.redisManager.connect();
             const channel= this.wsManager.getUrl() as string;
-
+            this.startListeningToRedis();
             //starts backgorugund tasks
             this.startPeriodicTasks()
+
 
             this.shutdown();
         }
         catch(e){
             console.error(e);
         }
+    }
+
+    private async startListeningToRedis(){
+          this.redisManager.subscribeToAllChannels((message:WSMessage)=>{
+           if(this.isShuttingDown)return;
+           this. wsManager.broadcast(message);
+          })
     }
     private async setUpRedisSubscriptions(channel:string){
         this.redisManager.subscribe(channel,(message:string)=>{

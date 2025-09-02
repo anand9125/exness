@@ -10,10 +10,11 @@ export async function scalewebsocket(data:Data){
     const fetchedPrice = Number(data.p);
     const bidPrice = fetchedPrice + fetchedPrice * bidPriceIncrementRate;
     const askPrice = fetchedPrice - fetchedPrice * askPriceDecrementRate;
-    console.log("New price : ", bidPrice, askPrice);
+   
 
     const symbol = data.s;
     const channel = symbol.replace("USDT","")
+     console.log("New price : ", bidPrice, askPrice,symbol);
     await pub.publish(channel , JSON.stringify({symbol, askPrice , bidPrice})); //BTC is redis channel
     console.log("Published to Redis", bidPrice, askPrice);
 }
