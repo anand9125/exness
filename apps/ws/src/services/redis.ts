@@ -7,9 +7,9 @@ export class RedisManager{
     private client:RedisClientType;  //you declare a variable client that holds your Redis connection.
     constructor(private url:string){
         this.client = createClient({url});  //create redis client
-        this.setupEventHandlers();
+        this.setup();
     }
-    private setupEventHandlers(){
+    private setup(){
         this.client.on("connect",()=>{
             console.log("connected to redis");
         })

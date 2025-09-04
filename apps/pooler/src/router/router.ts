@@ -17,4 +17,9 @@ export async function scalewebsocket(data:Data){
      console.log("New price : ", bidPrice, askPrice,symbol);
     await pub.publish(channel , JSON.stringify({symbol, askPrice , bidPrice})); //BTC is redis channel
     console.log("Published to Redis", bidPrice, askPrice);
+    await pub.hSet(`asset:${symbol}`,{ //using the redis hash we can store the data in redis hash HSET automatically overwrites the field with the new value
+        symbol,
+        askPrice,   
+        bidPrice
+    })
 }

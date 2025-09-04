@@ -1,6 +1,6 @@
 "use client";
 import { useState } from 'react';
-import { TradingInstrument } from '@repo/common';
+
 import { Settings, Plus, Minus, TrendingUp, TrendingDown } from 'lucide-react';
 import { useTickStore } from '../../../app/zustand/store';
 

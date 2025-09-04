@@ -18,7 +18,8 @@ export const userSignup = async(req:Request,res:Response)=>{
 
        const user = users.get(username);
        if(users.has(username)){
-           return res.status(400).json({ error: "User already exists" });
+           res.status(400).json({ error: "User already exists" });
+           return;
         }
        const newUser: User = {
            password,

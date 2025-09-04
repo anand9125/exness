@@ -10,10 +10,10 @@ export class WSManager{
 
     constructor(port:number){
         this.wss = new WebSocketServer({port});
-        this.setupEventHandlers();  //call the setupEventHandlers method
+        this.setUp();  //call the setupEventHandlers method
     }
 
-    private setupEventHandlers(){
+    private setUp(){
         this.wss.on("connection", (ws: WebSocket, req) => {
         const channel = req.url ? req.url.replace("/", "") : null;
 

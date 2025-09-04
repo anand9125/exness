@@ -2,7 +2,7 @@ import { Router } from "express";
 import { Request, Response } from "express";
 import {pool} from  "../db/db";
 const router = Router();
-router.get("/candles",async(req:Request,res:Response)=>{
+router.get("/",async(req:Request,res:Response)=>{
 
     try {
       const { symbol = "BTC", interval = "1m", limit = "10" } = req.query;
