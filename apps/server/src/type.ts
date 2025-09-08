@@ -18,12 +18,14 @@ export interface GetAssetDetails {
   ask_price: string;
 }
 
+import { UUID } from "crypto";
 // inMemoryDB.ts
 import Decimal from "decimal.js";
 import z from "zod";
 export type User = {
+  username:string;
   password: string;
-  balance: Map<string, Balance>; // key = asset symbol
+  balance: Map<string, Balance>; // key = asset symbol value = balance
   positions: Position[];
   orders: Order[];
   transactions: Transaction[];
@@ -55,8 +57,9 @@ export type Order = {
 };
 
 export type Position = {
-  userId: string;
-  instrument: string;
+  orderId: UUID;
+  userId: UUID;
+  asset: string;
   side: "Buy" | "Sell";
   leverage: Decimal;
   volume: Decimal;         // position size (base asset qty)
@@ -64,6 +67,7 @@ export type Position = {
   currentPrice?: Decimal;  // last tick price (updated in memory)
   margin: Decimal;         // locked funds
   stopLoss?: Decimal;
+  exposure?: Decimal;
   takeProfit?: Decimal;
   pnl?: Decimal;           // real-time profit/loss (computed & cached)
   status: "open" | "closed" | "liquidated";

@@ -1,5 +1,4 @@
 import type { Data } from "../type";
-import { connectRedis } from  "../connectionredis/connectredis";
 import {pub} from "../connectionredis/connectredis";
 
 const bidPriceIncrementRate = 0.0005;

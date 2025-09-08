@@ -8,4 +8,6 @@ export const placeMarketOrder = async(req:any,res:any)=>{
         const volume = new Decimal(volumeLot);
         const sL = new Decimal(stopLoss);
         const tP = new Decimal(takeProfit);
-        const 
+   }catch(err:any){
+
+   }}

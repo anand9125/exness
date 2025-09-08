@@ -2,126 +2,69 @@ import { Router } from "express";
 import { Request,Response } from "express";
 const router = Router();
 import Decimal from "decimal.js";
-import { checkBalance, creditAssets, deLockBalance, getLatestAssetDetails, getPosition, lockBalance, openPosition } from "../Helper";
+import { checkBalance,  closePosition,  creditAssets, deLockBalance, getAllBalances, getBalance, getPosition, getUserPosition, lockBalance, openPosition } from "../Helper";
 import {GetAssetDetails} from "../type";
+import { randomUUID, UUID } from "crypto";
 
-router.post("/open",async(req:Request,res:Response)=>{
-    let{side,volume,asset,stopLoss,takeProfit,username,laverage,baseInstrumentId} = req.body;
+
+router.post("/open", async (req: Request, res: Response) => {
+    let { side, volume, asset, stopLoss, takeProfit, userId, laverage } = req.body;
     volume = new Decimal(volume);
     stopLoss = new Decimal(stopLoss);
     takeProfit = new Decimal(takeProfit);
     laverage = new Decimal(laverage);
-    console.log("i got the request",req.body)
-     try{
 
-        if(side == "Buy"){
-         if(laverage==1){
-            
-               const assetDetails = await getLatestAssetDetails(asset) as GetAssetDetails
-               // const assetDetails = {ask_price:"100",bid_price:"100"}
-               console.log("assetDetails",assetDetails)
-                const totalPrice = volume.mul(assetDetails.ask_price)
-                const isEnoughBalance = await checkBalance(totalPrice,username)
-                if(!isEnoughBalance){
-                    res.status(400).json({
-                        message:"Insufficient balance"
-                    })
-                    return
-                }   
-                await lockBalance(totalPrice,username)
-                const openPrice =new Decimal(assetDetails.ask_price);
-                const position = await openPosition(username,side,volume,totalPrice,stopLoss,takeProfit,"open",laverage,baseInstrumentId,openPrice)
-                //  const order = await createOrder(username,side,volume,totalPrice,stopLoss,takeProfit,"pending")
-                await deLockBalance(username,totalPrice)
-                await creditAssets(username,baseInstrumentId,volume)
-                res.status(200).json({
-                    message:"Position opened",
-                    position
-                })
+    console.log("Request body:", req.body);
 
-         }
-         else {
-                const assetDetails = await getLatestAssetDetails(asset) as GetAssetDetails
-                const margin = volume.mul(assetDetails.ask_price).div(laverage)
-                const isEnoughMargin = await checkBalance(margin,username)
-                if(!isEnoughMargin){
-                    res.status(400).json({
-                        message:"Insufficient margin"
-                    })
-                    return
-                }
-                await lockBalance(margin,username)
-                const openPrice =new Decimal(assetDetails.ask_price);
-                const position = await openPosition(username,side,volume,margin,stopLoss,takeProfit,"open",laverage,baseInstrumentId,openPrice)
-                //  const order = await createOrder(username,side,volume,margin,stopLoss,takeProfit,"pending")
-                await deLockBalance(username,margin)
-                await creditAssets(username,baseInstrumentId,volume)
-                res.status(200).json({
-                    message:"Position opened",
-                    position
-                })
-         } 
+    try {
+        // const assetDetails = await getLatestAssetDetails(asset) as GetAssetDetails;
+        const assetDetails = {bid_price:"100",ask_price:"100"}
+        const price = side === "Buy" ? new Decimal(assetDetails.ask_price) : new Decimal(assetDetails.bid_price);
+
+        let entryPrice: Decimal;
+        if (laverage.eq(1)) {
+            entryPrice = volume.mul(price);
+        } else {
+            entryPrice = volume.mul(price).div(laverage);
         }
-        else{
-            if(laverage.eq(1)){
-                const assetDetails = await getLatestAssetDetails(asset) as GetAssetDetails
-                const totalPrice = volume.mul(assetDetails.bid_price)
-                const isEnoughBalance = await checkBalance(totalPrice,username)
-                if(!isEnoughBalance){
-                    res.status(400).json({
-                        message:"Insufficient balance"
-                    })
-                    return
-                }
-                await lockBalance(totalPrice,username)
-                const openPrice = new Decimal(assetDetails.bid_price);
-                const position = await openPosition(username,side,volume,totalPrice,stopLoss,takeProfit,"open",laverage,baseInstrumentId,openPrice)
-                //  const order = await createOrder(username,side,volume,totalPrice,stopLoss,takeProfit,"pending")
-                await deLockBalance(username,totalPrice)
-                await creditAssets(username,baseInstrumentId,volume)
-                res.status(200).json({
-                    message:"Position opened",
-                    position
-                })
-            }else{
-                // const assetDetails = await getLatestAssetDetails(asset) as GetAssetDetails
-                const assetDetails = {bid_price:"100",ask_price:"100"}
-                const margin = volume.mul(assetDetails.bid_price).div(laverage)
-                const isEnoughMargin = await checkBalance(margin,username)
-                if(!isEnoughMargin){
-                    res.status(400).json({
-                        message:"Insufficient margin"
-                    })
-                    return
-                }
-                await lockBalance(margin,username)
-                const openPrice =new Decimal(assetDetails.bid_price);
-                const position = await openPosition(username,side,volume,margin,stopLoss,takeProfit,"open",laverage,baseInstrumentId,openPrice)
-                //  const order = await createOrder(username,side,volume,margin,stopLoss,takeProfit,"pending")
-                await deLockBalance(username,margin)
-                await creditAssets(username,baseInstrumentId,volume)
-                res.status(200).json({
-                    message:"Position opened",
-                    position
-                })
-
-            }
+         console.log("reached here")
+        const isEnough = await checkBalance(entryPrice, userId);
+        if (!isEnough) {
+              res.status(400).json({
+                message: laverage.eq(1) ? "Insufficient balance" : "Insufficient margin"
+            });
+             return;
         }
-    
-    }catch(err){
-        res.status(500).json({
-            message:"Internal server error"
-        })
-    }
-})
+        console.log("user have enough balance")
 
-router.post("/getPosition",async(req:Request,res:Response)=>{
-    const {username,baseInstrumentId,status} = req.body;
-    try{
-        const position = await getPosition(username,baseInstrumentId,status)
+        await lockBalance(entryPrice, userId);
+
+        const orderId = randomUUID();
+        const position = await openPosition(orderId, userId, side, volume, entryPrice, stopLoss, takeProfit, "open", laverage, asset, price);
+
+        await deLockBalance(userId, entryPrice);
+        await creditAssets(userId,asset, volume);
+
         res.status(200).json({
-            message:"Position fetched",
+            message: "Position opened",
             position
+        });
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({
+            message: "Internal server error"
+        });
+    }
+});
+
+
+router.post("/getUSDTBalance",async(req:Request,res:Response)=>{
+    try{
+        const {userId} = req.body;
+        const balance = await getBalance(userId);
+        res.status(200).json({
+            balance
         })
     }catch(err){
         res.status(500).json({
@@ -129,4 +72,43 @@ router.post("/getPosition",async(req:Request,res:Response)=>{
         })
     }
 })
+
+router.post("/getAllBalances",async(req:Request,res:Response)=>{
+    try{
+        const {userId} = req.body;
+        const balance = await getAllBalances(userId);
+        res.status(200).json({
+            balance
+        })
+    }catch(err){
+        res.status(500).json({
+            message:"Internal server error"
+        })
+    }
+ })
+
+router.post("/closePosition",async(req:Request,res:Response)=>{
+    const {orderId,userId} = req.body;
+    if(!orderId){
+        res.status(400).json({
+            message:"Invalid request"
+        })
+        return
+    }
+    try{
+        const position = await getUserPosition(orderId,userId) ;
+        if(position){
+           const closedPosition = await closePosition(position);
+            res.status(200).json({
+                message:"Success",
+                data:closedPosition
+            })
+        }
+    }catch(err){
+        res.status(500).json({
+            message:"Internal server error"
+        })
+    }
+})
+
 export const orderRouter = router; 
