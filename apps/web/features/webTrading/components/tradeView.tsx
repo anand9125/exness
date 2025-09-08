@@ -71,7 +71,6 @@ const TradeChart = ({ selectedTick }: TradeChartProps) => {
     init();
 
     return () => {
-      // destroy only the chart created by this effect
       chartManager?.destroy();
       if (chartManagerRef.current === chartManager) {
         chartManagerRef.current = null;
@@ -83,11 +82,11 @@ const TradeChart = ({ selectedTick }: TradeChartProps) => {
       const ws = new WebSocket(`ws://localhost:8080/${symbol}`);
       ws.onmessage = (event)=>{
         try {
-        console.log("event",event.data)
         const msg:CandleTick = JSON.parse(event.data)
+        console.log("this is paraseData",msg)
           if(msg.type =="tick" && msg.symbol == symbol){
               setTick(msg)
-              console.log(msg)
+              console.log(msg,"this is message")
               const candle= msg.candles[interval];
               if(!candle)return;
               const updatedCandle:UpdatedCandleData = {

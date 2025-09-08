@@ -1,8 +1,7 @@
 "use client";
 import { useEffect, useState } from 'react';
 import { Search, Star } from 'lucide-react';
-import { mockInstruments } from '@repo/common';
-import { TradingInstrument } from '@repo/common';
+
 import { CandleTick, GlobalTick, WSMessage } from './interfaces';
 import { useGlobalTickStore, useTickStore } from '../../../app/zustand/store';
 //import {WebSocket} from 'ws';

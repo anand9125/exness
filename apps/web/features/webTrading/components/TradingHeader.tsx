@@ -1,10 +1,10 @@
-import { mockInstruments } from '@repo/common';
+
 import { Bell, Settings, User, ChevronDown, LogOut } from 'lucide-react';
 import { useAuth } from '../../../lib/AuthContext';
 
 const TradingHeader = () => {
   const { user, isAuthenticated, logout } = useAuth();
-  const topInstruments = mockInstruments.slice(0, 6);
+  
 
   const handleLogout = async () => {
     await logout();

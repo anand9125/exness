@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Settings, Plus, Minus, TrendingUp, TrendingDown } from 'lucide-react';
 import { useTickStore } from '../../../app/zustand/store';
 
+const leverageOptions = [1, 2, 3, 5, 10, 20];
 interface TradingPanelProps {
   selectedTick: string;
 }
@@ -15,6 +16,13 @@ const TradingPanel = ({ selectedTick }: TradingPanelProps) => {
   const [takeProfit, setTakeProfit] = useState('');
   const [stopLoss, setStopLoss] = useState('');
   const [activeTab, setActiveTab] = useState<'open' | 'pending' | 'closed'>('open');
+  const [leverage, setLeverage] = useState(1);
+
+  const handleSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = Number(e.target.value);
+    setLeverage(value);
+  };
+
 
   // const formatPrice = (price: number) => {
   //   if (!selectedTick) return price.toFixed(2);
@@ -136,25 +144,44 @@ const TradingPanel = ({ selectedTick }: TradingPanelProps) => {
               value={stopLoss}
               onChange={(e) => setStopLoss(e.target.value)}
               placeholder="Not set"
-              className="w-full bg-[#1a1f26] border border-[#2a3441] rounded-lg px-3 py-2 text-white font-mono focus:outline-none focus:border-[#ff6b00] transition-colors"
+              className="w-full bg-[#1a1f26] border border-[#2a3441] rounded-lg px-3 py-1 text-white font-mono focus:outline-none focus:border-[#ff6b00] transition-colors"
             />
           </div>
+          <div className="w-96 bg-[#141920] flex flex-col h-full  text-white">
+      <h2 className="text- font-medium pb-2">Leverage Control</h2>
 
-          <div className="bg-[#1a1f26] rounded-lg p-4 space-y-2">
-            <div className="text-xs text-gray-400 font-medium mb-2">Order Details</div>
-            <div className="flex justify-between text-xs">
-              <span className="text-gray-400">Margin Required:</span>
-              <span className="text-white font-mono">16.98 USD</span>
-            </div>
-            <div className="flex justify-between text-xs">
-              <span className="text-gray-400">Leverage:</span>
-              <span className="text-white font-mono">1:200</span>
-            </div>
-            <div className="flex justify-between text-xs">
-              <span className="text-gray-400">Spread:</span>
-              <span className="text-white font-mono">0.8 pts</span>
-            </div>
-          </div>
+      {/* Slider */}
+      <input
+        type="range"
+        min="1"
+        max="20"
+        step="1"
+        value={leverage}
+        onChange={handleSliderChange}
+        className="w-full accent-blue-500 max-w-80"
+      />
+
+    
+
+      {/* Predefined Buttons */}
+      <div className="flex flex-wrap pl-4 gap-2 pt-3 ">
+        {leverageOptions.map((option) => (
+          <button
+            key={option}
+            onClick={() => setLeverage(option)}
+            className={`px-3 py-1 rounded text-sm ${
+              leverage === option
+                ? 'bg-blue-500 text-white'
+                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+            }`}
+          >
+            {option}x
+          </button>
+        ))}
+      </div>
+
+      
+    </div>
 
           <button
             className={`w-full py-3 rounded-lg font-bold text-white transition-colors ${
@@ -170,38 +197,7 @@ const TradingPanel = ({ selectedTick }: TradingPanelProps) => {
       </div>
 
       {/* Positions/Orders Section */}
-      <div className="flex-1 flex flex-col">
-        <div className="flex items-center justify-between p-4 border-b border-[#2a3441]">
-          <div className="flex space-x-6">
-            {['open', 'pending', 'closed'].map((tab) => (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab as typeof activeTab)}
-                className={`text-sm capitalize transition-colors ${
-                  activeTab === tab 
-                    ? 'text-[#ff6b00] border-b-2 border-[#ff6b00] pb-1 font-medium' 
-                    : 'text-gray-400 hover:text-white'
-                }`}
-              >
-                {tab}
-              </button>
-            ))}
-          </div>
-          <button className="text-gray-400 hover:text-white transition-colors">
-            <Settings size={16} />
-          </button>
-        </div>
-
-        <div className="flex-1 flex items-center justify-center p-8">
-          <div className="text-center">
-            <div className="w-16 h-16 bg-[#1a1f26] rounded-full flex items-center justify-center mb-4 mx-auto">
-              <span className="text-2xl">📊</span>
-            </div>
-            <div className="text-gray-400 text-sm mb-2">No {activeTab} positions</div>
-            <div className="text-gray-500 text-xs">Your {activeTab} trades will appear here</div>
-          </div>
-        </div>
-      </div>
+    
     </div>
   );
 };

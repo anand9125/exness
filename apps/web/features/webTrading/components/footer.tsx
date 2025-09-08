@@ -1,34 +1,44 @@
-import React from 'react'
-
+import React, { useState } from 'react'
+import { Settings } from 'lucide-react';
 function Footer() {
+  const [takeProfit, setTakeProfit] = useState('');
+  const [stopLoss, setStopLoss] = useState('');
+  const [activeTab, setActiveTab] = useState<'open' | 'pending' | 'closed'>('open');
   return (
    <div>
-      <div>
-        <div className='bg-[#141920] border-t border-[#2a3441] h-16 flex items-center justify-between'>
-            <div className='flex space-x-6 border-b border-[#2a3441] p-4 w-full'>
-                <div className='pl-3'>
-                    <button className='cursor-pointer hover:underline underline-offset-11'>
-                        OPEN
-                    </button>
-                </div>
-                <div>
-                    <button className='cursor-pointer hover:underline underline-offset-11'>
-                        PENDING
-                    </button>
-                </div>
-                <div className=''>
-                <button className='cursor-pointer hover:underline underline-offset-11'>
-                    CLOSED
-                </button>
-                </div>
-            </div>
-            <div>
-                <div>
-
-                </div>
-            </div>
+      <div className=''>
+        <div className="flex-1 flex flex-col">
+        <div className="flex items-center justify-between pb-4 border-b border-[#2a3441]">
+          <div className="flex space-x-6 pl-4">
+            {['open', 'pending', 'closed'].map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab as typeof activeTab)}
+                className={`text-sm capitalize transition-colors ${
+                  activeTab === tab 
+                    ? 'text-[#ff6b00] border-b-2 border-[#ff6b00] pb-1 font-medium' 
+                    : 'text-gray-400 hover:text-white'
+                }`}
+              >
+                {tab}
+              </button>
+            ))}
+          </div>
+          <button className="text-gray-400 hover:text-white transition-colors pr-4">
+            <Settings size={16} />
+          </button>
         </div>
 
+        <div className="flex-1 flex items-center justify-center p-8">
+          <div className="text-center">
+            <div className="w-16 h-16 bg-[#1a1f26] rounded-full flex items-center justify-center mb-4 mx-auto">
+              <span className="text-2xl">📊</span>
+            </div>
+            <div className="text-gray-400 text-sm mb-2">No {activeTab} positions</div>
+            <div className="text-gray-500 text-xs">Your {activeTab} trades will appear here</div>
+          </div>
+        </div>
+      </div>
       </div>
    </div>
   )
