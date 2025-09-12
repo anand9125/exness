@@ -1,9 +1,8 @@
 import React, { useState } from 'react'
 import { Settings } from 'lucide-react';
 function Footer() {
-  const [takeProfit, setTakeProfit] = useState('');
-  const [stopLoss, setStopLoss] = useState('');
   const [activeTab, setActiveTab] = useState<'open' | 'pending' | 'closed'>('open');
+  
   return (
    <div>
       <div className=''>

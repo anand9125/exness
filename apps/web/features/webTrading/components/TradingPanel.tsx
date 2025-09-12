@@ -1,8 +1,9 @@
 "use client";
 import { useState } from 'react';
-
+import axios from 'axios';
 import { Settings, Plus, Minus, TrendingUp, TrendingDown } from 'lucide-react';
 import { useTickStore } from '../../../app/zustand/store';
+import { backendUrl } from '../../../lib/url';
 
 const leverageOptions = [1, 2, 3, 5, 10, 20];
 interface TradingPanelProps {
@@ -24,14 +25,6 @@ const TradingPanel = ({ selectedTick }: TradingPanelProps) => {
   };
 
 
-  // const formatPrice = (price: number) => {
-  //   if (!selectedTick) return price.toFixed(2);
-  //   return selectedTick.category === 'forex' 
-  //     ? price.toFixed(5) 
-  //     : price.toFixed(2);
-  // };
-  
-
   const incrementVolume = () => {
     setVolume((prev) => (parseFloat(prev) + 0.01).toFixed(2));
   };
@@ -40,21 +33,31 @@ const TradingPanel = ({ selectedTick }: TradingPanelProps) => {
     setVolume((prev) => Math.max(0.01, parseFloat(prev) - 0.01).toFixed(2));
   };
 
+  const handleOrder = async (orderType:string,volume:string,leverage:number,takeProfit:string,stopLoss:string)=>{
+      const res = await axios.post(`${backendUrl}/order/open`,{
+        symbol:selectedTick,
+        side:orderType,
+        volume:volume,
+        leverage:leverage,
+        takeProfit:takeProfit,
+        stopLoss:stopLoss,
+        asset:"USDT",
+        userId:"dcdffd7e-1fe7-4d1d-bcf2-461a828471b1"
+
+      })
+      console.log(res)
+      if(res.status === 200){
+   }
+ }
+
+
+
   return (
     <div className="w-96 bg-[#141920] border-l border-[#2a3441] flex flex-col h-full">
       {/* Current Price Display */}
       <div className="p-6 border-b border-[#2a3441]">
         <div className="text-center mb-6">
-          {/* <div className="text-white text-3xl font-mono font-bold mb-2">
-            {selectedInstrument ? formatPrice(selectedInstrument.price) : '3,400.000'}
-          </div>
-          <div className="text-gray-400 text-sm font-medium">
-            {selectedInstrument?.symbol || 'XAU/USD'}
-          </div> */}
-          {/* <div className={`text-sm font-medium mt-1 ${selectedInstrument?.change && selectedInstrument.change >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-            {selectedInstrument?.change && selectedInstrument.change >= 0 ? '+' : ''}
-            {selectedInstrument?.changePercent?.toFixed(2) || '+0.25'}%
-          </div> */}
+        
         </div>
         
         <div className="grid grid-cols-2 gap-4">
@@ -148,7 +151,7 @@ const TradingPanel = ({ selectedTick }: TradingPanelProps) => {
             />
           </div>
           <div className="w-96 bg-[#141920] flex flex-col h-full  text-white">
-      <h2 className="text- font-medium pb-2">Leverage Control</h2>
+      <h2 className="text- font-medium pb-4">Leverage Control</h2>
 
       {/* Slider */}
       <input
@@ -164,7 +167,7 @@ const TradingPanel = ({ selectedTick }: TradingPanelProps) => {
     
 
       {/* Predefined Buttons */}
-      <div className="flex flex-wrap pl-4 gap-2 pt-3 ">
+      <div className="flex flex-wrap pl-4 gap-2 pt-4 ">
         {leverageOptions.map((option) => (
           <button
             key={option}
@@ -184,12 +187,13 @@ const TradingPanel = ({ selectedTick }: TradingPanelProps) => {
     </div>
 
           <button
-            className={`w-full py-3 rounded-lg font-bold text-white transition-colors ${
+            className={`w-full py-3 rounded-lg font-bold text-white transition-colors pt-2 ${
               orderType === 'buy' 
                 ? 'bg-green-500 hover:bg-green-600' 
                 : 'bg-red-500 hover:bg-red-600'
             }`}
-            onClick={() => console.log(`${orderType.toUpperCase()} order placed`)}
+            // onClick={() => console.log(`${orderType.toUpperCase()} order placed`)}
+            onClick={()=>{handleOrder(orderType,volume,leverage,takeProfit,stopLoss)}}
           >
             {orderType === 'buy' ? 'BUY' : 'SELL'} {volume} lots
           </button>
@@ -200,6 +204,6 @@ const TradingPanel = ({ selectedTick }: TradingPanelProps) => {
     
     </div>
   );
-};
+}
 
 export default TradingPanel;

@@ -3,7 +3,7 @@
 import React, { useEffect, useRef } from 'react'
 import { ChartManager, UpdatedCandleData } from '../../../lib/chartManager';
 import { CandleTick, GlobalTick, WSMessage } from './interfaces';
-import { backendUrl } from '../../../lib/url';
+import { backendUrl, KLINES_BASE } from '../../../lib/url';
 import { useTickStore } from '../../../app/zustand/store';
 interface KLine{
     close: string;
@@ -34,16 +34,44 @@ const TradeChart = ({ selectedTick }: TradeChartProps) => {
 
     const init = async () => {
       try {
-        const res = await fetch(
-          `${backendUrl}/candles?symbol=${symbol}&interval=${interval}&limit=100`
-        );
-        const kLinesData: KLine[] = await res.json();
+        const params = new URLSearchParams();
+        params.set('symbol', symbol);
+        params.set('interval', interval);
+        params.set('limit', '500');
+
+        // const res = await fetch(
+        //   `${backendUrl}/candles?symbol=${symbol}&interval=${interval}&limit=100`
+        // );
+
+        const res = await fetch(`${KLINES_BASE}?${params.toString()}`,{
+          method:"GET",
+           headers: {
+            'User-Agent': 'Mozilla/5.0',
+            'Accept': 'application/json'
+          }
+        });
+        if(!res.ok){
+          throw new Error("Failed to fetch k-lines data");
+        }
+        console.log(res,"this is res you defintely need it")
+        const data = await res.json();
+        const candles: KLine[] = data.map((d: any[]) => ({
+          time: Math.floor(d[0] / 1000) ,
+          open: Number(d[1]),
+          high: Number(d[2]),
+          low: Number(d[3]),
+          close: Number(d[4]),
+        }));
+        
+        // const kLinesData: KLine[] = await res.json();
+        // console.log(kLinesData,"this is klines data")
+        console.log(candles,"this is candles")
 
         if (!chartRef.current) return;
         chartManagerRef.current?.destroy();
-        const processedCandles = kLinesData
+        const processedCandles = candles
           .map(kline => {
-            const ts = new Date(kline.bucket).getTime();
+            const ts = new Date(kline.time).getTime();
             return {
               open: parseFloat(kline.open),
               high: parseFloat(kline.high),

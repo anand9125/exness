@@ -37,41 +37,7 @@ const TradingHeader = () => {
         </nav>
       </div>
       
-      {/* Market Ticker */}
-      {/* <div className="flex items-center ml-8 space-x-4 flex-1 overflow-x-auto">
-        {topInstruments.map((instrument) => (
-          <div key={instrument.id} className="flex items-center space-x-3 cursor-pointer hover:bg-[#1a1f26] px-3 py-2 rounded transition-colors min-w-fit">
-            <div className="flex items-center space-x-2">
-              {instrument.category === 'crypto' && (
-                <div className="w-6 h-6 bg-[#ff6b00] rounded-full flex items-center justify-center">
-                  <span className="text-xs font-bold text-white">₿</span>
-                </div>
-              )}
-              {instrument.category === 'forex' && (
-                <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
-                  <span className="text-xs font-bold text-white">$</span>
-                </div>
-              )}
-              {instrument.category === 'stocks' && (
-                <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
-                  <span className="text-xs font-bold text-white">S</span>
-                </div>
-              )}
-              <span className="text-white text-sm font-medium">
-                {instrument.symbol}
-              </span>
-            </div>
-            <div className="text-right">
-              <div className="text-white text-sm font-mono">
-                {instrument.price.toFixed(instrument.category === 'forex' ? 5 : 2)}
-              </div>
-              <div className={`text-xs font-medium ${instrument.change >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                {instrument.change >= 0 ? '+' : ''}{instrument.changePercent.toFixed(2)}%
-              </div>
-            </div>
-          </div>
-        ))}
-      </div> */}
+      
 
       {/* User Section */}
       <div className="flex items-center space-x-4 ml-6">

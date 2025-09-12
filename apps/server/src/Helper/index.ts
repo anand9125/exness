@@ -101,7 +101,7 @@ export const getAllBalances = async (userId:UUID)=>{
   return balance;
   }
 
-export const closePosition =  (position: Position) => {
+export const closePosition =  (position: Position) => {1
   const user = users.get(position.userId) as User;
   const currentAssetDetails = { bid_price: "1001", ask_price: "1000" };
 //const currentAssetDetails = await getLatestAssetDetails(position.asset) as GetAssetDetails;
@@ -136,14 +136,12 @@ export const closePosition =  (position: Position) => {
       if (!usdtBalance) throw new Error("USDT balance not found");
 
       usdtBalance.quantity = usdtBalance.quantity.add(position.margin.add(pnl));
-
-      const closedPosition: Position = {
-          ...position,
-          pnl,
-          closedAt: new Date(),
-          currentPrice: position.side === "Buy" ? askPrice : bidPrice,
-          status: "closed",
-      };
+      const Position = user.positions.find(psn => psn.orderId ===position.orderId) as Position
+      Position.pnl = pnl;
+      Position.closedAt = new Date();
+      Position.currentPrice = position.side === "Buy" ? askPrice : bidPrice;  
+      Position.status = "closed";
+      const closedPosition=user.positions.find(psn => psn.orderId ===Position.orderId) as Position
 
       return closedPosition;
 
@@ -154,48 +152,79 @@ export const closePosition =  (position: Position) => {
 };
 
 
-export const checkliquidation = async(trade:any)=>{
-    const askPric = new Decimal(trade.askPrice);
-    const bidPric = new Decimal(trade.bidPrice);
-    const closePositions:Position[]=[]
-    const allPositions:Position[] = Array.from(users.values()).flatMap(user => user.positions).filter(position => position.status === "open");
-    //flatMap =>its combination of two steps in one
-    //map(): Transforms each element of an array. (if we do only map it will be ;[ ['order1', 'order2'], ['order3'], ['order4', 'order5'] ])
-    // flat(): Flattens the result by 1 level. (if we use flat after the map it will be ['order1', 'order2', 'order3', 'order4', 'order5']) from that we can get all the positions in one array
-    allPositions.forEach(position=>{
-      if(position.asset===trade.symbol){
-        let pnl:Decimal;
-        if (position.side === "Buy") {
-            pnl = position?.exposure?.mul(trade.askPrice.sub(position.openPrice)).div(position.openPrice) as Decimal
-            if(position.stopLoss && askPric.lte(position.stopLoss)){
-               const closedPosition= closePosition(position) as Position
-                 closePositions.push(closedPosition)
-            }else{
-              if(position.takeProfit && askPric.gte(position.takeProfit)){
-                const closedPosition= closePosition(position) as Position
-                 closePositions.push(closedPosition)
-               }
-            }
-        } else {
-            pnl = position?.exposure?.mul(position.openPrice.sub(trade.bidPrice)).div(position.openPrice) as Decimal
-            if(position.stopLoss && bidPric.gte(position.stopLoss)){
-                 console.log("stop loss triggered")
-                 const closedPosition= closePosition(position) as Position
-                 closePositions.push(closedPosition)
-            }else{
-              if(position.takeProfit && bidPric.lte(position.takeProfit)){
-                console.log("take profit triggered")
-                const closedPosition= closePosition(position) as Position
-                closePositions.push(closedPosition)
-              }
-            }
+export const checkLiquidation = async (trade: any): Promise<Position[]> => {
+  const askPrice = new Decimal(trade.askPrice);
+  const bidPrice = new Decimal(trade.bidPrice);
+  const closePositions: Position[] = [];
+
+  const allPositions: Position[] = Array.from(users.values())
+    .flatMap(user => user.positions)
+    .filter(position => position.status === "open");
+
+  const liquidationThreshold = new Decimal(0.9); // Example threshold
+
+  allPositions.forEach(position => {
+    if (position.asset === trade.symbol) {
+      const exposure = new Decimal(position.exposure ??0);
+      const openPrice = new Decimal(position.openPrice);
+      const stopLoss = position.stopLoss ? new Decimal(position.stopLoss) : null;
+      const takeProfit = position.takeProfit ? new Decimal(position.takeProfit) : null;
+
+      let pnl: Decimal;
+
+      if (position.side === "Buy") {
+        pnl = exposure.mul(askPrice.sub(openPrice)).div(openPrice);
+           console.log(stopLoss,position.status,askPrice)
+        if (stopLoss && position.status==="open" && askPrice.lte(stopLoss)) {
+          console.log("Stop loss triggered (Buy)");
+          const closedPosition = closePosition(position) as Position;
+          console.log("closedPosition",closedPosition)
+          closePositions.push(closedPosition);
+          // return;
         }
-        const limit = Decimal(0.9)
-        if(pnl.gt(limit.mul(position.margin))){
-           const closedPosition= closePosition(position) as Position
-           closePositions.push(closedPosition)
-        }        
+ 
+        if (takeProfit && position.status=="open" && askPrice.gte(takeProfit)) {
+          console.log("Take profit triggered (Buy)");
+          const closedPosition = closePosition(position) as Position;
+          console.log("closedPosition",closedPosition)
+          closePositions.push(closedPosition);
+        //  return;
+        }
+
+      } else { // "Sell"
+        pnl = exposure.mul(openPrice.sub(bidPrice)).div(openPrice);
+
+        if (stopLoss && position.status=="open" && bidPrice.gte(stopLoss)) {
+          console.log("Stop loss triggered (Sell)");
+          const closedPosition = closePosition(position) as Position;
+          console.log("closedPosition",closedPosition)
+          closePositions.push(closedPosition);
+         // return;
+        }
+
+        if (takeProfit &&position.status=="open" && bidPrice.lte(takeProfit)) {
+          console.log("Take profit triggered (Sell)");
+          const closedPosition = closePosition(position) as Position;
+          console.log("closedPosition",closedPosition)
+          closePositions.push(closedPosition);
+          //return;
+        }
       }
-    })
-    return closePositions;
-}
+
+      // Liquidation condition (adjust as needed)
+      if (pnl.lte(position.margin.mul(-0.9))) {
+        console.log("Liquidation triggered");
+        const closedPosition = closePosition(position) as Position;
+        closePositions.push(closedPosition);
+      }
+    }
+  });
+
+  return closePositions;
+};
+
+export const getUserOpenOrder = async (userId: UUID, orderId: UUID) => {
+  const user = users.get(userId) as User;
+  const openOrders = user.orders.filter(order => order.id === orderId);
+  return openOrders;
+};

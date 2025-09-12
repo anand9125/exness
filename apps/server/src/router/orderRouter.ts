@@ -2,17 +2,18 @@ import { Router } from "express";
 import { Request,Response } from "express";
 const router = Router();
 import Decimal from "decimal.js";
-import { checkBalance,  closePosition,  creditAssets, deLockBalance, getAllBalances, getBalance, getPosition, getUserPosition, lockBalance, openPosition } from "../Helper";
+import { checkBalance,  closePosition,getUserOpenOrder, creditAssets, deLockBalance, getAllBalances, getBalance, getPosition, getUserPosition, lockBalance, openPosition } from "../Helper";
 import {GetAssetDetails} from "../type";
 import { randomUUID, UUID } from "crypto";
 
 
 router.post("/open", async (req: Request, res: Response) => {
-    let { side, volume, asset, stopLoss, takeProfit, userId, laverage } = req.body;
+    console.log(req.body)
+    let { side, volume, asset, stopLoss, takeProfit, userId, leverage } = req.body;
     volume = new Decimal(volume);
     stopLoss = new Decimal(stopLoss);
     takeProfit = new Decimal(takeProfit);
-    laverage = new Decimal(laverage);
+    leverage = new Decimal(leverage);
 
     console.log("Request body:", req.body);
 
@@ -22,16 +23,16 @@ router.post("/open", async (req: Request, res: Response) => {
         const price = side === "Buy" ? new Decimal(assetDetails.ask_price) : new Decimal(assetDetails.bid_price);
 
         let entryPrice: Decimal;
-        if (laverage.eq(1)) {
+        if (leverage.eq(1)) {
             entryPrice = volume.mul(price);
         } else {
-            entryPrice = volume.mul(price).div(laverage);
+            entryPrice = volume.mul(price).div(leverage);
         }
          console.log("reached here")
         const isEnough = await checkBalance(entryPrice, userId);
         if (!isEnough) {
               res.status(400).json({
-                message: laverage.eq(1) ? "Insufficient balance" : "Insufficient margin"
+                message: leverage.eq(1) ? "Insufficient balance" : "Insufficient margin"
             });
              return;
         }
@@ -40,7 +41,7 @@ router.post("/open", async (req: Request, res: Response) => {
         await lockBalance(entryPrice, userId);
 
         const orderId = randomUUID();
-        const position = await openPosition(orderId, userId, side, volume, entryPrice, stopLoss, takeProfit, "open", laverage, asset, price);
+        const position = await openPosition(orderId, userId, side, volume, entryPrice, stopLoss, takeProfit, "open", leverage, asset, price);
 
         await deLockBalance(userId, entryPrice);
         await creditAssets(userId,asset, volume);
@@ -104,6 +105,20 @@ router.post("/closePosition",async(req:Request,res:Response)=>{
                 data:closedPosition
             })
         }
+    }catch(err){
+        res.status(500).json({
+            message:"Internal server error"
+        })
+    }
+})
+
+router.post("/getOpenOrder",async(req:Request,res:Response)=>{
+    try{
+        const {userId,orderId} = req.body;
+        const openOrders = await getUserOpenOrder(userId,orderId);
+        res.status(200).json({
+            openOrders
+        })
     }catch(err){
         res.status(500).json({
             message:"Internal server error"

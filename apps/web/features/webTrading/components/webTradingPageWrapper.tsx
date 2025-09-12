@@ -1,4 +1,4 @@
-"use client";
+"use client"
 import { useState } from 'react';
 import TradingHeader from './TradingHeader';
 import InstrumentSidebar from './InstrumentSidebar';
@@ -10,7 +10,7 @@ const WebTradingPageWrapper = () => {
   // const [selectedInstrument, setSelectedInstrument] = useState<TradingInstrument | null>(
   //   mockInstruments.find((instrument: TradingInstrument) => instrument.symbol === 'XAU/USD') || null
   // );
-  const[selectedTick,setSelectedTick] = useState<string>("BSTUSDT")
+  const[selectedTick,setSelectedTick] = useState<string>("BTCUSDT")
 
   return (
     <div className="trading-layout flex flex-col h-screen">
