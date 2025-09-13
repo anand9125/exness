@@ -79,3 +79,18 @@ Learn more about the power of Turborepo:
 - [Filtering](https://turbo.build/repo/docs/core-concepts/monorepos/filtering)
 - [Configuration Options](https://turbo.build/repo/docs/reference/configuration)
 - [CLI Usage](https://turbo.build/repo/docs/reference/command-line-reference)
+
+
+
+
+
+#somthing good to learn
+You should never call a React component directly as a function.
+Instead, React handles rendering the component when state changes
+#How It Works in React + Zustand
+1.State is centralized in Zustand store:
+openOrders array lives in the Zustand store.
+2️. After placing an order, just update the state:
+Call fetchOpenOrders() to update the store.
+3.The component automatically re-renders because it listens to the store:
+const { openOrders, fetchOpenOrders } = useOpenOrders();

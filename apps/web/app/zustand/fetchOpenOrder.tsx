@@ -1,44 +1,54 @@
 "use client";
+
 import { create } from "zustand";
 import axios from "axios";
 import { useUserStore } from "./useUserStore";
 import { backendUrl } from "../../lib/url";
+import { UUID } from "crypto";
 
-export interface Order {
-  orderId: string;
-  userId: string;
+export interface Position {
+  orderId: UUID;
+  userId: UUID;
   asset: string;
-  quantity: number;
-  openingPrice: number;
-  leverage: number;
+  side: "Buy" | "Sell";
+  leverage: string;
+  volume: string;
+  openPrice: string;
+  margin: string;
+  stopLoss: string;
+  exposure: string;
+  takeProfit: string;
+  status: "open" | "closed" | "cancelled";
   createdAt: string;
-  type: "BUY" | "SELL";
+}
+
+interface GetOpenOrdersResponse {
+  position: Position[];
 }
 
 interface OrderStore {
-  openOrders: Order[];
+  openOrders: Position[];
   fetchOpenOrders: () => Promise<void>;
-  setOpenOrders: (orders: Order[]) => void;
+  setOpenOrders: (orders: Position[]) => void;
 }
 
 export const useOpenOrders = create<OrderStore>((set, get) => {
-  const { token } = useUserStore.getState();
 
+  const token = localStorage.getItem("token");
   return {
     openOrders: [],
-    setOpenOrders: (orders: Order[]) => set({ openOrders: orders }),
+
+    setOpenOrders: (orders: Position[]) => set({ openOrders: orders }),
+
     fetchOpenOrders: async () => {
       try {
-        const res = await axios.get(`${backendUrl}/buy/open-orders`, {
-          headers: { Authorization: `Bearer ${token}` },
+        console.log("Fetching Open Orders")
+        const res = await axios.get<GetOpenOrdersResponse>(`${backendUrl}/order/getOpenOrder`, {
+          headers: { Authorization: `${token}` },
         });
 
-        const data = res.data;
-
-        // Convert numeric keys to array
-        const ordersArray: Order[] = Object.keys(data)
-          .filter((key) => !isNaN(Number(key)))
-          .map((key) => data[key]);
+        const ordersArray = res.data.position;
+        console.log("Fetched Open Orders:", ordersArray);
 
         set({ openOrders: ordersArray });
       } catch (err) {

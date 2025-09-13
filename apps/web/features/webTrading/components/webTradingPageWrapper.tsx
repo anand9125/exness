@@ -22,8 +22,8 @@ const WebTradingPageWrapper = () => {
           
         />
         <div className="flex-1 flex flex-col">
-          <TradeChart selectedTick={selectedTick} />
-          <Footer></Footer>
+          <TradeChart selectedTick={selectedTick}  />
+           <Footer className="" />
         </div>
         
         <TradingPanel selectedTick ={selectedTick}/>

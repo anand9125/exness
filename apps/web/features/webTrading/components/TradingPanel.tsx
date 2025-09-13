@@ -6,21 +6,25 @@ import { useTickStore } from '../../../app/zustand/store';
 import { backendUrl } from '../../../lib/url';
 import { toast } from 'sonner';
 import { OpenOrdersTable } from './opeOrderTable';
+import { useUserStore } from '../../../app/zustand/useUserStore';
+import { useOpenOrders } from '../../../app/zustand/fetchOpenOrder';
 
 const leverageOptions = [1, 2, 3, 5, 10, 20];
 interface TradingPanelProps {
   selectedTick: string;
+  className?: string;
 }
 
-const TradingPanel = ({ selectedTick }: TradingPanelProps) => {
+const TradingPanel = ({ selectedTick , className }: TradingPanelProps) => {
   const candleTick  = useTickStore((state)=>state.candleTick)
   const [orderType, setOrderType] = useState<'buy' | 'sell'>('buy');
   const [volume, setVolume] = useState('0.01');
-  const [takeProfit, setTakeProfit] = useState('');
-  const [stopLoss, setStopLoss] = useState('');
-  const [activeTab, setActiveTab] = useState<'open' | 'pending' | 'closed'>('open');
+  const [takeProfit, setTakeProfit] = useState("0");
+  const [stopLoss, setStopLoss] = useState("0");
   const [leverage, setLeverage] = useState(1);
+  const {fetchOpenOrders} = useOpenOrders()
 
+  const token = localStorage.getItem("token");
   const handleSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = Number(e.target.value);
     setLeverage(value);
@@ -37,22 +41,22 @@ const TradingPanel = ({ selectedTick }: TradingPanelProps) => {
 
   const handleOrder = async (orderType:string,volume:string,leverage:number,takeProfit:string,stopLoss:string)=>{
       const res = await axios.post(`${backendUrl}/order/open`,{
-        symbol:selectedTick,
         side:orderType,
         volume:volume,
         leverage:leverage,
         takeProfit:takeProfit,
         stopLoss:stopLoss,
-        asset:"USDT",
-        userId:"dcdffd7e-1fe7-4d1d-bcf2-461a828471b1"
-
-      })
+        asset:selectedTick,
+      },{
+        headers:{
+          Authorization:` ${token}`
+        }
+       })
       console.log(res)
       if(res.status === 200){
-        toast("order placed sucessfully");
-        OpenOrdersTable();
-
-   }
+        console.log("Order Placed Successfully")
+        fetchOpenOrders();  
+      }
  }
 
 

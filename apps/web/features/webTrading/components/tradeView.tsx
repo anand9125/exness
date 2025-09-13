@@ -5,6 +5,7 @@ import { ChartManager, UpdatedCandleData } from '../../../lib/chartManager';
 import { CandleTick, GlobalTick, WSMessage } from './interfaces';
 import { backendUrl, KLINES_BASE } from '../../../lib/url';
 import { useGlobalTickStore, useTickStore } from '../../../app/zustand/store';
+import { useOpenOrders } from '../../../app/zustand/fetchOpenOrder';
 interface KLine{
     close: string;
     end: string;
@@ -20,10 +21,13 @@ interface KLine{
 }
 interface TradeChartProps {
   selectedTick:string
+  className?: string;
 }
 
-const TradeChart = ({ selectedTick }: TradeChartProps) => {
+const TradeChart = ({ selectedTick, className }: TradeChartProps) => {
     const setTick=  useTickStore((state)=>state.setCandleTick)
+      const { openOrders, fetchOpenOrders } = useOpenOrders();
+    
     const chartRef = useRef<HTMLDivElement>(null);
     const chartManagerRef = useRef<ChartManager>(null);
     const[interval, setInterval] = React.useState("1m")
@@ -31,6 +35,7 @@ const TradeChart = ({ selectedTick }: TradeChartProps) => {
     const setGlobalTick = useGlobalTickStore((state)=>state.setGlobalTick)
 
     useEffect(() => {
+      fetchOpenOrders();
     let chartManager: ChartManager | null = null;
 
     const init = async () => {
@@ -115,7 +120,6 @@ const TradeChart = ({ selectedTick }: TradeChartProps) => {
         const msg:CandleTick = JSON.parse(event.data)
         console.log("this is paraseData",msg)
         console.log(symbol,"this is symbol")
-
           if(msg.type =="tick" && msg.symbol == symbol){
               setTick(msg)
               console.log(msg,"this is message")
@@ -149,7 +153,7 @@ const TradeChart = ({ selectedTick }: TradeChartProps) => {
 
 
   return (
-    <div className="flex-1 bg-[#0a0e13] border-r border-[#2a3441] relative">
+    <div className="flex-1 bg-[#0a0e13] border-r border-[#2a3441] relative max-h-[28rem] ">
      
       
       {/* Chart Container */}

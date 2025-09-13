@@ -7,9 +7,10 @@ import { useGlobalTickStore, useTickStore } from '../../../app/zustand/store';
 //import {WebSocket} from 'ws';
 interface InstrumentSidebarProps {
   setSelectedTick: (symbol: string) => void;
+  className?: string;
 }
 
-const InstrumentSidebar = ({ setSelectedTick }: InstrumentSidebarProps) => {
+const InstrumentSidebar = ({ setSelectedTick, className }: InstrumentSidebarProps) => {
    
     const globalTick = useGlobalTickStore((state)=>state.gloabalTick)
     const candleTick  = useTickStore((state)=>state.candleTick)

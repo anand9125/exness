@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { Eye, EyeOff, TrendingUp, Lock, User } from 'lucide-react';
 import { useAuth } from '../../lib/AuthContext';
 import { useUserStore } from '../zustand/useUserStore';
+import { backendUrl } from '../../lib/url';
 
 const LoginPage = () => {
   const [formData, setFormData] = useState({
@@ -35,12 +36,11 @@ const LoginPage = () => {
     setError('');
 
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_SERVER}/api/v1/user/signin`, {
+      const response = await fetch(`${backendUrl}/user/signin`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        credentials: 'include', // Include cookies
         body: JSON.stringify(formData),
       });
 

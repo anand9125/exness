@@ -2,13 +2,17 @@ import { Router } from "express";
 import { Request,Response } from "express";
 const router = Router();
 import Decimal from "decimal.js";
-import { checkBalance,  closePosition,getUserOpenOrder, creditAssets, deLockBalance, getAllBalances, getBalance, getPosition, getUserPosition, lockBalance, openPosition } from "../Helper";
-import { randomUUID } from "crypto";
+import { checkBalance,  closePosition, creditAssets, deLockBalance, getAllBalances, getBalance, getUserPosition, lockBalance, openPosition, getUserOpenPosition } from "../Helper";
+import { randomUUID, UUID } from "crypto";
+import { CustomRequest } from "../middleware/userMiddleware";
 
 
-router.post("/open", async (req: Request, res: Response) => {
+router.post("/open", async (req:CustomRequest, res: Response) => {
     console.log(req.body)
-    let { side, volume, asset, stopLoss, takeProfit, userId, leverage } = req.body;
+    let { side, volume, asset, stopLoss, takeProfit, leverage } = req.body;
+    //@ts-ignore
+    const userId = req?.id as UUID
+    console.log(userId)
     volume = new Decimal(volume);
     stopLoss = new Decimal(stopLoss);
     takeProfit = new Decimal(takeProfit);
@@ -111,12 +115,12 @@ router.post("/closePosition",async(req:Request,res:Response)=>{
     }
 })
 
-router.post("/getOpenOrder",async(req:Request,res:Response)=>{
+router.get("/getOpenOrder",async(req:CustomRequest,res:Response)=>{
     try{
-        const {userId,orderId} = req.body;
-        const openOrders = await getUserOpenOrder(userId,orderId);
+        const userId = req.id as UUID;
+        const position = await getUserOpenPosition(userId);
         res.status(200).json({
-            openOrders
+            position
         })
     }catch(err){
         res.status(500).json({

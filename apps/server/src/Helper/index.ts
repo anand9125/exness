@@ -74,11 +74,7 @@ export const creditAssets = async (userId:UUID,asset:string,qnt:Decimal)=>{
         locked:Decimal(0),
      })
 }
-export const getPosition = async (userId:UUID,baseInstrumentId:string,status:"open"|"closed"|"liquidated")=>{
-    const user = users.get(userId) as User;
-    const position = user.positions.find(position=>position.asset===baseInstrumentId&&position.status===status)
-    return position;
-}
+
 
 export const getUserPosition = async (orderId:UUID,userId:UUID)=>{
   const user = users.get(userId) as User;
@@ -223,8 +219,9 @@ export const checkLiquidation = async (trade: any): Promise<Position[]> => {
   return closePositions;
 };
 
-export const getUserOpenOrder = async (userId: UUID, orderId: UUID) => {
+
+export const getUserOpenPosition = async (userId: UUID) => {
   const user = users.get(userId) as User;
-  const openOrders = user.orders.filter(order => order.id === orderId);
-  return openOrders;
+  const position = user.positions.filter(position=>position.status==="open");
+  return position;
 };

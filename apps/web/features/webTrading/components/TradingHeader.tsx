@@ -2,7 +2,7 @@
 import { Bell, Settings, User, ChevronDown, LogOut } from 'lucide-react';
 import { useAuth } from '../../../lib/AuthContext';
 
-const TradingHeader = () => {
+const TradingHeader = ({ className }: { className?: string }) => {
   const { user, isAuthenticated, logout } = useAuth();
   
 
