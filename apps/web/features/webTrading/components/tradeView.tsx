@@ -4,7 +4,7 @@ import React, { useEffect, useRef } from 'react'
 import { ChartManager, UpdatedCandleData } from '../../../lib/chartManager';
 import { CandleTick, GlobalTick, WSMessage } from './interfaces';
 import { backendUrl, KLINES_BASE } from '../../../lib/url';
-import { useTickStore } from '../../../app/zustand/store';
+import { useGlobalTickStore, useTickStore } from '../../../app/zustand/store';
 interface KLine{
     close: string;
     end: string;
@@ -23,11 +23,12 @@ interface TradeChartProps {
 }
 
 const TradeChart = ({ selectedTick }: TradeChartProps) => {
-     const setTick=  useTickStore((state)=>state.setCandleTick)
+    const setTick=  useTickStore((state)=>state.setCandleTick)
     const chartRef = useRef<HTMLDivElement>(null);
     const chartManagerRef = useRef<ChartManager>(null);
     const[interval, setInterval] = React.useState("1m")
     let symbol = selectedTick.toString()
+    const setGlobalTick = useGlobalTickStore((state)=>state.setGlobalTick)
 
     useEffect(() => {
     let chartManager: ChartManager | null = null;
@@ -107,11 +108,14 @@ const TradeChart = ({ selectedTick }: TradeChartProps) => {
   }, [selectedTick,interval]);
 
    useEffect(()=>{
+      
       const ws = new WebSocket(`ws://localhost:8080/${symbol}`);
       ws.onmessage = (event)=>{
         try {
         const msg:CandleTick = JSON.parse(event.data)
         console.log("this is paraseData",msg)
+        console.log(symbol,"this is symbol")
+
           if(msg.type =="tick" && msg.symbol == symbol){
               setTick(msg)
               console.log(msg,"this is message")
@@ -125,6 +129,9 @@ const TradeChart = ({ selectedTick }: TradeChartProps) => {
                 timestamp:new Date(candle.startTime),
               }
               chartManagerRef.current?.updateData(updatedCandle)
+            }
+            else {
+                setGlobalTick(msg as GlobalTick)
             }
           }catch(err){
             console.error("Error parsing message:", err);

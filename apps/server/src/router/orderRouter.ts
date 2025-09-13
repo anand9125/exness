@@ -3,8 +3,7 @@ import { Request,Response } from "express";
 const router = Router();
 import Decimal from "decimal.js";
 import { checkBalance,  closePosition,getUserOpenOrder, creditAssets, deLockBalance, getAllBalances, getBalance, getPosition, getUserPosition, lockBalance, openPosition } from "../Helper";
-import {GetAssetDetails} from "../type";
-import { randomUUID, UUID } from "crypto";
+import { randomUUID } from "crypto";
 
 
 router.post("/open", async (req: Request, res: Response) => {

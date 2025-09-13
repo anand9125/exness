@@ -16,11 +16,13 @@ export class WSManager{
     private setUp(){
         this.wss.on("connection", (ws: WebSocket, req) => {
         const channel = req.url ? req.url.replace("/", "") : null;
+        const symbol = channel?.replace("USDT", "");
 
-        if (channel) {
+        if (symbol) {
+            console.log("Client connected, subscribing to Redis channel:", channel);
             console.log("Client connected, subscribing to Redis channel:", channel);
             // Let Server know which channel to subscribe to
-            this.onChannelSelected?.(channel);
+            this.onChannelSelected?.(symbol);
         }
 
         ws.send("You are connected to socket server");

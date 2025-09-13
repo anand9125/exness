@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Eye, EyeOff, TrendingUp, Lock, User } from 'lucide-react';
 import { useAuth } from '../../lib/AuthContext';
+import { useUserStore } from '../zustand/useUserStore';
 
 const LoginPage = () => {
   const [formData, setFormData] = useState({
@@ -16,6 +17,8 @@ const LoginPage = () => {
   const [error, setError] = useState('');
   const router = useRouter();
   const { login } = useAuth();
+    const setUser = useUserStore((state)=>state.setUser)
+  
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -42,7 +45,7 @@ const LoginPage = () => {
       });
 
       const data = await response.json();
-
+      setUser(data)
       if (response.ok) {
         // Use AuthContext login method
         login(formData.username, data.userId);

@@ -5,21 +5,21 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Eye, EyeOff, TrendingUp, Lock, User, Mail } from 'lucide-react';
 import { useAuth } from '../../lib/AuthContext';
+import { backendUrl } from '../../lib/url';
+import { useUserStore } from '../zustand/useUserStore';
 
 const SignupPage = () => {
   const [formData, setFormData] = useState({
     username: '',
-    email: '',
     password: '',
-    confirmPassword: ''
   });
   const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const router = useRouter();
   const { login } = useAuth();
-
+  const setUser = useUserStore((state)=>state.setUser)
+  
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -34,53 +34,41 @@ const SignupPage = () => {
       setError('Username is required');
       return false;
     }
-    if (!formData.email.trim()) {
-      setError('Email is required');
-      return false;
-    }
-    if (!formData.email.includes('@')) {
-      setError('Please enter a valid email address');
-      return false;
-    }
+   
     if (formData.password.length < 6) {
       setError('Password must be at least 6 characters long');
       return false;
     }
-    if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match');
-      return false;
-    }
+    
     return true;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
     if (!validateForm()) {
       return;
     }
-
     setIsLoading(true);
     setError('');
 
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_SERVER}/api/v1/user/signup`, {
+      const response = await fetch(`${backendUrl}/user/signup`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        credentials: 'include', // Include cookies
         body: JSON.stringify({
           username: formData.username,
-          email: formData.email,
           password: formData.password
         }),
       });
-
       const data = await response.json();
+      setUser(data)
+      
 
       if (response.ok) {
         // Use AuthContext login method
+
         login(formData.username, data.userId);
         
         // Redirect to trading platform
@@ -139,22 +127,7 @@ const SignupPage = () => {
             </div>
 
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-2">
-                Email Address
-              </label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
-                <input
-                  type="email"
-                  id="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  className="w-full bg-[#1a1f26] border border-[#2a3441] rounded-lg pl-10 pr-4 py-3 text-white focus:outline-none focus:border-[#ff6b00] transition-colors"
-                  placeholder="Enter your email"
-                  required
-                />
-              </div>
+              
             </div>
 
             <div>
@@ -184,28 +157,10 @@ const SignupPage = () => {
             </div>
 
             <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-300 mb-2">
-                Confirm Password
-              </label>
+             
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
-                <input
-                  type={showConfirmPassword ? 'text' : 'password'}
-                  id="confirmPassword"
-                  name="confirmPassword"
-                  value={formData.confirmPassword}
-                  onChange={handleInputChange}
-                  className="w-full bg-[#1a1f26] border border-[#2a3441] rounded-lg pl-10 pr-12 py-3 text-white focus:outline-none focus:border-[#ff6b00] transition-colors"
-                  placeholder="Confirm your password"
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
-                >
-                  {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                </button>
+              
+                
               </div>
             </div>
 

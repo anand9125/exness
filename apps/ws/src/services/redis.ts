@@ -37,7 +37,7 @@ export class RedisManager{
     async subscribeToAllChannels(callback: (message:string) => void): Promise<void> {
     try {
         await this.client.pSubscribe("*", (message, channel) => {
-        console.log(`Got message from ${channel}: ${message}`);
+      //  console.log(`Got message from ${channel}: ${message}`);
         try {
             
             callback(message);

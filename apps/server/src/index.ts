@@ -5,6 +5,7 @@ import express from "express";
 import { getCandlesData } from "./router/candles";
 import { userRouter } from "./router/userRouter";
 import { orderRouter } from "./router/orderRouter";
+import { userMiddleware } from "./middleware/userMiddleware";
 
 
 const app = express();
@@ -16,7 +17,7 @@ app.use("/api/v1/candles",getCandlesData);
 
 app.use("/api/v1/user",userRouter);
 
-app.use("/api/v1/order",orderRouter);
+app.use("/api/v1/order", userMiddleware , orderRouter);
 
 
 

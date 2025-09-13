@@ -10,6 +10,7 @@ export type Data ={
     M:boolean
   }
 
+  export const JWTPASSWORD = "secret"
 export type Interval = "1m" | "5m" | "15m" | "30m";
 
 export interface GetAssetDetails {

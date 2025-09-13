@@ -4,6 +4,8 @@ import axios from 'axios';
 import { Settings, Plus, Minus, TrendingUp, TrendingDown } from 'lucide-react';
 import { useTickStore } from '../../../app/zustand/store';
 import { backendUrl } from '../../../lib/url';
+import { toast } from 'sonner';
+import { OpenOrdersTable } from './opeOrderTable';
 
 const leverageOptions = [1, 2, 3, 5, 10, 20];
 interface TradingPanelProps {
@@ -47,6 +49,9 @@ const TradingPanel = ({ selectedTick }: TradingPanelProps) => {
       })
       console.log(res)
       if(res.status === 200){
+        toast("order placed sucessfully");
+        OpenOrdersTable();
+
    }
  }
 
