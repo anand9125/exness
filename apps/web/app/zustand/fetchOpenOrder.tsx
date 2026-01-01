@@ -10,7 +10,7 @@ export interface Position {
   orderId: UUID;
   userId: UUID;
   asset: string;
-  side: "Buy" | "Sell";
+  side: "buy" | "sell";
   leverage: string;
   volume: string;
   openPrice: string;

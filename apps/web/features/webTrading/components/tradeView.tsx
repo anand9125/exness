@@ -59,7 +59,6 @@ const TradeChart = ({ selectedTick, className }: TradeChartProps) => {
         if(!res.ok){
           throw new Error("Failed to fetch k-lines data");
         }
-        console.log(res,"this is res you defintely need it")
         const data = await res.json();
         const candles: KLine[] = data.map((d: any[]) => ({
           time: Math.floor(d[0] / 1000) ,
@@ -69,9 +68,7 @@ const TradeChart = ({ selectedTick, className }: TradeChartProps) => {
           close: Number(d[4]),
         }));
         
-        // const kLinesData: KLine[] = await res.json();
-        // console.log(kLinesData,"this is klines data")
-        console.log(candles,"this is candles")
+        
 
         if (!chartRef.current) return;
         chartManagerRef.current?.destroy();
@@ -118,11 +115,9 @@ const TradeChart = ({ selectedTick, className }: TradeChartProps) => {
       ws.onmessage = (event)=>{
         try {
         const msg:CandleTick = JSON.parse(event.data)
-        console.log("this is paraseData",msg)
-        console.log(symbol,"this is symbol")
+       
           if(msg.type =="tick" && msg.symbol == symbol){
               setTick(msg)
-              console.log(msg,"this is message")
               const candle= msg.candles[interval];
               if(!candle)return;
               const updatedCandle:UpdatedCandleData = {

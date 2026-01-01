@@ -5,7 +5,7 @@ import Decimal from "decimal.js";
 import { checkBalance,  closePosition, creditAssets, deLockBalance, getAllBalances, getBalance, getUserPosition, lockBalance, openPosition, getUserOpenPosition } from "../Helper";
 import { randomUUID, UUID } from "crypto";
 import { CustomRequest } from "../middleware/userMiddleware";
-
+import { getAssetDetails } from "../services/getAssetDetails";
 
 router.post("/open", async (req:CustomRequest, res: Response) => {
     console.log(req.body)
@@ -21,18 +21,23 @@ router.post("/open", async (req:CustomRequest, res: Response) => {
     console.log("Request body:", req.body);
 
     try {
-        // const assetDetails = await getLatestAssetDetails(asset) as GetAssetDetails;
-        const assetDetails = {bid_price:"100",ask_price:"100"}
-        const price = side === "Buy" ? new Decimal(assetDetails.ask_price) : new Decimal(assetDetails.bid_price);
+         const assetDetails = await getAssetDetails(asset) as any;
+            if (!assetDetails) {
+                res.status(400).json({
+                    message: "Invalid asset"
+                });
+                return;
+            }
+            console.log("asset details", assetDetails)
+        const price = side === "buy" ? new Decimal(assetDetails.askPrice) : new Decimal(assetDetails.bidPrice);
+         console.log("price",price)
+        // exposure = volume * price (not dependent on leverage)
+        const exposure = volume.mul(price);
+        // margin required = exposure / leverage
+        const margin = exposure.div(leverage);
 
-        let entryPrice: Decimal;
-        if (leverage.eq(1)) {
-            entryPrice = volume.mul(price);
-        } else {
-            entryPrice = volume.mul(price).div(leverage);
-        }
-         console.log("reached here")
-        const isEnough = await checkBalance(entryPrice, userId);
+        console.log("reached here")
+        const isEnough = await checkBalance(margin, userId);
         if (!isEnough) {
               res.status(400).json({
                 message: leverage.eq(1) ? "Insufficient balance" : "Insufficient margin"
@@ -41,13 +46,27 @@ router.post("/open", async (req:CustomRequest, res: Response) => {
         }
         console.log("user have enough balance")
 
-        await lockBalance(entryPrice, userId);
+        // lock required margin from user's USDT balance
+        await lockBalance(margin, userId);
 
         const orderId = randomUUID();
-        const position = await openPosition(orderId, userId, side, volume, entryPrice, stopLoss, takeProfit, "open", leverage, asset, price);
+        const position = await openPosition(
+            orderId,
+            userId,
+            side,
+            volume,
+            margin,
+            stopLoss,
+            takeProfit,
+            "open",
+            leverage,
+            asset,
+            price,
+            exposure,
+        );
 
-        await deLockBalance(userId, entryPrice);
-        await creditAssets(userId,asset, volume);
+        // DO NOT unlock margin here — margin remains locked until position is closed
+        await creditAssets(userId, asset, volume);
 
         res.status(200).json({
             message: "Position opened",
@@ -118,6 +137,7 @@ router.post("/closePosition",async(req:Request,res:Response)=>{
 router.get("/getOpenOrder",async(req:CustomRequest,res:Response)=>{
     try{
         const userId = req.id as UUID;
+        console.log("userId",userId)
         const position = await getUserOpenPosition(userId);
         res.status(200).json({
             position

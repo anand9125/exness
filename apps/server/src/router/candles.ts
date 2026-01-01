@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { Request, Response } from "express";
-import {pool} from  "../db/db";
+// import {pool} from  "../db/db";
 const router = Router();
 router.get("/",async(req:Request,res:Response)=>{
 
@@ -22,8 +22,8 @@ router.get("/",async(req:Request,res:Response)=>{
         LIMIT $2;
       `;
   
-      const result = await pool.query(query, [symbol, Number(limit)]);
-      res.json(result.rows);
+      // const result = await pool.query(query, [symbol, Number(limit)]);
+      // res.json(result.rows);
     } catch (err) {
       console.error("Error fetching candles:", err);
       res.status(500).json({ error: "Internal server error" });

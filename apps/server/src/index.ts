@@ -1,4 +1,4 @@
-import { initializeDatabase } from "./db/schema"; 
+// import { initializeDatabase } from "./db/schema"; 
 import Cors from "cors";
 import { connectredis } from "./db/connectToRedis";
 import express from "express";
@@ -22,10 +22,8 @@ app.use("/api/v1/order", userMiddleware , orderRouter);
 
 
 (async () => {
-  await initializeDatabase();
   await connectredis();
-//  await connectToredis()
   app.listen(4000, () => {
-    console.log("Server running on port 3000");
+    console.log("Server running on port 4000");
   });
 })();

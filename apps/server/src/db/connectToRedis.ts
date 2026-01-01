@@ -1,5 +1,5 @@
 import { createClient, RedisClientType } from "redis";
-import { pool } from "./db";
+// import { pool } from "./db";
 import { sendTradeToServer } from "../services/getAssetDetails";
 export const pub: RedisClientType = createClient({
   url: process.env.redis_Url || "redis://localhost:6379",
@@ -15,14 +15,14 @@ export async function connectredis(){
       const trade = JSON.parse(message); 
       sendTradeToServer(trade)
    //   console.log("trade this is trade",trade)
-      await pool.query(
-      `INSERT INTO trades (time, symbol, bid_price, ask_price)
-        VALUES (NOW(), $1, $2, $3)`,
-      [
-        trade.symbol,
-        trade.bidPrice,
-        trade.askPrice,
-      ]
-    );
+    //   await pool.query(
+    //   `INSERT INTO trades (time, symbol, bid_price, ask_price)
+    //     VALUES (NOW(), $1, $2, $3)`,
+    //   [
+    //     trade.symbol,
+    //     trade.bidPrice,
+    //     trade.askPrice,
+    //   ]
+    // );
  })
 }

@@ -14,6 +14,7 @@ export const userMiddleware = (req: CustomRequest, res: Response, next: any) => 
      if(token){
       const payload = jwt.verify(token, JWTPASSWORD) as {userId: UUID};
       req.id = payload.userId;
+      console.log("payload",payload)
       next();
     }else{
       res.status(401).json({
