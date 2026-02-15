@@ -5,7 +5,7 @@ A high-performance cryptocurrency trading platform with real-time price feeds, W
 
 ## 🏗️ Architecture Overview
 
-(docs/images/Screenshot_2025-08-29_at_1.31.26_AM.png)
+![App Screenshot](docs/images/Screenshot_2025-08-29_at_1.31.26_AM.png)
 
 
 ## 🔧 Components
