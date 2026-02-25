@@ -4,10 +4,13 @@ import Decimal from "decimal.js";
 import { users } from "../store/store";
 import { UUID } from "crypto";
 import { getAssetDetails } from "../services/getAssetDetails";
-const client = createClient();
- client.connect().then(() => {
+
+const client = createClient({
+  url: process.env.REDIS_URL || "redis://localhost:6379",
+});
+client.connect().then(() => {
   console.log("Redis client connected");
-})
+});
 
 
 const liveData:{symbol:string,bid_price:string,ask_price:string}[] = [];

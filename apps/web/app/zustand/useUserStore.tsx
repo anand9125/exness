@@ -1,24 +1,26 @@
-"use-client";
+"use client";
+
 import { UUID } from "crypto";
-import Decimal from "decimal.js";
 import { toast } from "sonner";
 import { create } from "zustand";
-export type User = {
-  username:string;
-  password: string;
-  balance: Map<string, Balance>; // key = asset symbol value = balance
+
+export type BalanceEntry = {
+  asset: string;
+  quantity: string;
+  locked: string;
 };
-type CreateUserResponse= {
+
+export type User = {
+  username: string;
+  password?: string;
+  balance: BalanceEntry[]; // from API
+};
+
+type CreateUserResponse = {
   userId: UUID;
   user: User;
   token: string;
-}
-export type Balance = {
-  asset: string;
-  quantity: Decimal;
-  locked: Decimal;
 };
-
 
 interface UserState {
   token: string | null;
@@ -28,17 +30,14 @@ interface UserState {
 }
 
 export const useUserStore = create<UserState>((set, get) => ({
-  token: typeof window !== "undefined" ? localStorage.getItem("token") : null, // Safe SSR handling
+  token: typeof window !== "undefined" ? localStorage.getItem("token") : null,
 
   user: new Map<UUID, User>(),
 
   setUser: (userResponse: CreateUserResponse) => {
-    console.log(userResponse, "this is user response");
-
-    const userMap = new Map(get().user); // Clone existing Map
+    const userMap = new Map(get().user);
     userMap.set(userResponse.userId, userResponse.user);
 
-    // Save token in store + localStorage
     localStorage.setItem("token", userResponse.token);
 
     set({
@@ -46,7 +45,7 @@ export const useUserStore = create<UserState>((set, get) => ({
       token: userResponse.token,
     });
 
-    toast.success("User created successfully");
+    toast.success("Signed in successfully");
   },
 
   logout: () => {

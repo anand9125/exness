@@ -2,8 +2,8 @@ import { DataStore } from "./services/datastore";
 import { RedisManager } from "./services/redis";
 import { WSManager } from "./services/websocket";
 import {WSMessage} from "./types/type";
-const WS_PORT = 8080;
-const REDIS_URL = "redis://localhost:6379";
+const WS_PORT = parseInt(process.env.WS_PORT || "8080", 10);
+const REDIS_URL = process.env.REDIS_URL || "redis://localhost:6379";
 const BROADCAST_THROTTLE_MS = 200;
 const CANDLE_UPDATE_INTERVAL_MS = 10;
 class Server{

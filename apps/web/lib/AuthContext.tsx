@@ -1,6 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { backendUrl } from './url';
 
 interface User {
   id: string;
@@ -24,27 +25,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Check if user is logged in on app start
     const userId = localStorage.getItem('userId');
     const username = localStorage.getItem('username');
-    
+
     if (userId && username) {
       setUser({ id: userId, username });
       fetchUserBalance(userId);
     }
-    
+
     setIsLoading(false);
   }, []);
 
   const fetchUserBalance = async (userId: string) => {
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_SERVER}/api/v1/user/balance`, {
-        credentials: 'include'
+      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+      const response = await fetch(`${backendUrl}/user/balance`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
-      
+
       if (response.ok) {
         const data = await response.json();
-        setUser(prev => prev ? { ...prev, balance: parseFloat(data.usd_balance) } : null);
+        setUser(prev => prev ? { ...prev, balance: parseFloat(data.usd_balance || '0') } : null);
       }
     } catch (error) {
       console.error('Failed to fetch balance for user:', userId, error);
@@ -59,20 +60,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     fetchUserBalance(userId);
   };
 
-  const logout = async () => {
-    try {
-      // Call logout endpoint to clear server-side session
-      await fetch(`${process.env.NEXT_PUBLIC_API_SERVER}/api/v1/user/logout`, {
-        method: 'POST',
-        credentials: 'include'
-      });
-    } catch (error) {
-      console.error('Logout error:', error);
-    }
-    
+  const logout = () => {
     setUser(null);
     localStorage.removeItem('userId');
     localStorage.removeItem('username');
+    localStorage.removeItem('token');
   };
 
   const fetchBalance = () => fetchUserBalance(user?.id || '');

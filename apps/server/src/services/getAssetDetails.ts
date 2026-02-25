@@ -18,14 +18,19 @@ export const sendTradeToServer = async (trade:any)=>{
   }
 }
 
-export const getAssetDetails = async (asset:string) => {
-  try{
-     const assetDetails = liveData.find(entry => entry.symbol === asset);
-     return assetDetails ?? null;
-  }
-  catch(e){
-    console.log("error",e)
+export const getAssetDetails = async (asset: string) => {
+  try {
+    let entry = liveData.find((e) => e.symbol === asset);
+    if (!entry && asset.endsWith("USDT")) {
+      entry = liveData.find((e) => e.symbol === asset.replace("USDT", ""));
+    }
+    if (!entry && !asset.endsWith("USDT")) {
+      entry = liveData.find((e) => e.symbol === asset + "USDT");
+    }
+    return entry ?? null;
+  } catch (e) {
+    console.error("getAssetDetails error", e);
     return null;
-  }  
-}
+  }
+};
 

@@ -3,78 +3,56 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Eye, EyeOff, TrendingUp, Lock, User, Mail } from 'lucide-react';
+import { Eye, EyeOff, TrendingUp, Lock, User } from 'lucide-react';
 import { useAuth } from '../../lib/AuthContext';
 import { backendUrl } from '../../lib/url';
 import { useUserStore } from '../zustand/useUserStore';
 
 const SignupPage = () => {
-  const [formData, setFormData] = useState({
-    username: '',
-    password: '',
-  });
+  const [formData, setFormData] = useState({ username: '', password: '' });
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const router = useRouter();
   const { login } = useAuth();
-  const setUser = useUserStore((state)=>state.setUser)
-  
+  const setUser = useUserStore((state) => state.setUser);
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-    setError(''); // Clear error when user types
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    setError('');
   };
 
   const validateForm = () => {
     if (!formData.username.trim()) {
-      setError('Username is required');
+      setError('Username is required.');
       return false;
     }
-   
     if (formData.password.length < 6) {
-      setError('Password must be at least 6 characters long');
+      setError('Password must be at least 6 characters.');
       return false;
     }
-    
     return true;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!validateForm()) {
-      return;
-    }
+    if (!validateForm()) return;
     setIsLoading(true);
     setError('');
-
     try {
       const response = await fetch(`${backendUrl}/user/signup`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          username: formData.username,
-          password: formData.password
-        }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: formData.username, password: formData.password }),
       });
       const data = await response.json();
-      setUser(data)
-      
-
       if (response.ok) {
-        // Use AuthContext login method
-
+        setUser(data);
         login(formData.username, data.userId);
-        
-        // Redirect to trading platform
         router.push('/webtrading');
       } else {
-        setError(data.error || 'Failed to create account');
+        setError(data.message || 'Failed to create account.');
       }
     } catch {
       setError('Network error. Please try again.');
@@ -84,42 +62,43 @@ const SignupPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#0a0e13] flex items-center justify-center p-4">
-      <div className="max-w-md w-full">
-        {/* Logo and Header */}
+    <div className="min-h-screen bg-[#0a0e13] flex items-center justify-center p-6">
+      <div className="w-full max-w-[400px]">
+        {/* Brand */}
         <div className="text-center mb-8">
-          <div className="flex items-center justify-center space-x-3 mb-4">
-            <div className="w-12 h-12 bg-[#ff6b00] rounded-lg flex items-center justify-center">
-              <TrendingUp className="text-white" size={28} />
+          <div className="inline-flex items-center gap-3 mb-5">
+            <div className="w-12 h-12 bg-[#ff6b00] rounded-xl flex items-center justify-center">
+              <TrendingUp className="text-white" size={26} />
             </div>
-            <div className="text-[#ff6b00] text-3xl font-bold">exness</div>
+            <span className="text-[#ff6b00] text-2xl font-bold tracking-tight">exness</span>
           </div>
-          <h1 className="text-white text-2xl font-bold mb-2">Create Account</h1>
-          <p className="text-gray-400">Start your trading journey today</p>
+          <h1 className="text-white text-2xl font-bold mb-2">Create account</h1>
+          <p className="text-[#b0b8c1] text-sm">Sign up to start trading. You’ll get a demo balance to practice.</p>
         </div>
 
-        {/* Signup Form */}
-        <div className="bg-[#141920] rounded-xl border border-[#2a3441] p-8">
-          <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Form card */}
+        <div className="bg-[#141920] rounded-xl border border-[#2a3441] p-6">
+          <form onSubmit={handleSubmit} className="space-y-5">
             {error && (
-              <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 text-red-400 text-sm">
+              <div className="rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-red-400 text-sm" role="alert">
                 {error}
               </div>
             )}
 
             <div>
-              <label htmlFor="username" className="block text-sm font-medium text-gray-300 mb-2">
+              <label htmlFor="signup-username" className="block text-sm font-medium text-white mb-2">
                 Username
               </label>
               <div className="relative">
-                <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 text-[#6b7280]" size={18} />
                 <input
                   type="text"
-                  id="username"
+                  id="signup-username"
                   name="username"
                   value={formData.username}
                   onChange={handleInputChange}
-                  className="w-full bg-[#1a1f26] border border-[#2a3441] rounded-lg pl-10 pr-4 py-3 text-white focus:outline-none focus:border-[#ff6b00] transition-colors"
+                  autoComplete="username"
+                  className="w-full bg-[#1a1f26] border border-[#2a3441] rounded-lg pl-10 pr-4 py-3 text-white placeholder:text-[#6b7280] focus:outline-none focus:ring-2 focus:ring-[#ff6b00] focus:border-[#ff6b00]"
                   placeholder="Choose a username"
                   required
                 />
@@ -127,96 +106,71 @@ const SignupPage = () => {
             </div>
 
             <div>
-              
-            </div>
-
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-2">
+              <label htmlFor="signup-password" className="block text-sm font-medium text-white mb-2">
                 Password
               </label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-[#6b7280]" size={18} />
                 <input
                   type={showPassword ? 'text' : 'password'}
-                  id="password"
+                  id="signup-password"
                   name="password"
                   value={formData.password}
                   onChange={handleInputChange}
-                  className="w-full bg-[#1a1f26] border border-[#2a3441] rounded-lg pl-10 pr-12 py-3 text-white focus:outline-none focus:border-[#ff6b00] transition-colors"
-                  placeholder="Create a password"
+                  autoComplete="new-password"
+                  className="w-full bg-[#1a1f26] border border-[#2a3441] rounded-lg pl-10 pr-11 py-3 text-white placeholder:text-[#6b7280] focus:outline-none focus:ring-2 focus:ring-[#ff6b00] focus:border-[#ff6b00]"
+                  placeholder="At least 6 characters"
                   required
+                  minLength={6}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#6b7280] hover:text-white p-1"
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
                 >
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
+              <p className="mt-1.5 text-xs text-[#6b7280]">Minimum 6 characters.</p>
             </div>
 
-            <div>
-             
-              <div className="relative">
-              
-                
-              </div>
-            </div>
-
-            <div className="flex items-start">
+            <div className="flex items-start gap-3">
               <input
                 type="checkbox"
-                id="terms"
-                className="form-checkbox h-4 w-4 text-[#ff6b00] bg-[#1a1f26] border-[#2a3441] rounded focus:ring-[#ff6b00] mt-1"
+                id="signup-terms"
+                className="mt-1 rounded border-[#2a3441] bg-[#1a1f26] text-[#ff6b00] focus:ring-[#ff6b00]"
                 required
               />
-              <label htmlFor="terms" className="ml-2 text-sm text-gray-300">
-                I agree to the{' '}
-                <Link href="/terms" className="text-[#ff6b00] hover:underline">
-                  Terms of Service
-                </Link>{' '}
-                and{' '}
-                <Link href="/privacy" className="text-[#ff6b00] hover:underline">
-                  Privacy Policy
-                </Link>
+              <label htmlFor="signup-terms" className="text-sm text-[#b0b8c1]">
+                I agree to the <Link href="/terms" className="text-[#ff6b00] hover:underline">Terms of Service</Link> and{' '}
+                <Link href="/privacy" className="text-[#ff6b00] hover:underline">Privacy Policy</Link>.
               </label>
             </div>
 
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-[#ff6b00] hover:bg-[#e55a00] disabled:bg-gray-600 disabled:cursor-not-allowed text-white font-bold py-3 px-4 rounded-lg transition-colors"
+              className="w-full bg-[#ff6b00] hover:bg-[#e55a00] disabled:bg-[#374151] disabled:cursor-not-allowed text-white font-semibold py-3 px-4 rounded-lg text-base transition-colors"
             >
-              {isLoading ? 'Creating Account...' : 'Create Account'}
+              {isLoading ? 'Creating account…' : 'Create account'}
             </button>
           </form>
 
-          <div className="mt-6 text-center">
-            <p className="text-gray-400">
-              Already have an account?{' '}
-              <Link href="/login" className="text-[#ff6b00] hover:underline font-medium">
-                Sign in
-              </Link>
-            </p>
-          </div>
+          <p className="mt-6 pt-5 border-t border-[#2a3441] text-center text-[#b0b8c1] text-sm">
+            Already have an account?{' '}
+            <Link href="/login" className="text-[#ff6b00] font-semibold hover:underline">Sign in</Link>
+          </p>
 
-          <div className="mt-6 pt-6 border-t border-[#2a3441]">
-            <div className="text-center">
-              <p className="text-xs text-gray-500 mb-2">Demo Account Access</p>
-              <Link 
-                href="/webtrading"
-                className="inline-flex items-center text-sm text-gray-400 hover:text-white transition-colors"
-              >
-                Continue as Guest
-              </Link>
-            </div>
+          <div className="mt-5 pt-5 border-t border-[#2a3441]">
+            <p className="text-center text-[#6b7280] text-xs mb-2">Try without an account</p>
+            <Link href="/webtrading" className="block text-center text-[#ff6b00] hover:underline text-sm font-medium">
+              Continue as guest
+            </Link>
           </div>
         </div>
 
-        <div className="mt-6 text-center text-xs text-gray-500">
-          Your account starts with $500,000 demo balance
-        </div>
+        <p className="mt-6 text-center text-[#6b7280] text-xs">You’ll receive a demo balance to start.</p>
       </div>
     </div>
   );

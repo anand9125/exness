@@ -1,23 +1,29 @@
 import React from 'react'
+import Link from 'next/link'
 
 const HeroSection = () => {
   return (
-    <div className='w-full bg-gradient-to-r from-[#213946] to-[#1a2e3a] text-white py-20 px-4'>
-      <div className='max-w-7xl mx-auto text-center'>
-        <h1 className='text-4xl md:text-5xl font-bold mb-6'>
-          Trade with Confidence on Exness
+    <div className="w-full bg-[#141920] text-white py-24 px-4 border-b border-[#2a3441]">
+      <div className="max-w-3xl mx-auto text-center">
+        <h1 className="text-3xl md:text-4xl font-bold mb-4 tracking-tight">
+          Trade with confidence
         </h1>
-        <p className='text-lg md:text-xl mb-8 max-w-2xl mx-auto'>
-          Join millions of traders worldwide with Exness, your trusted platform for forex, stocks, and crypto trading. 
-          Experience low spreads, fast execution, and 24/7 support.
+        <p className="text-[#b0b8c1] text-base md:text-lg mb-10 max-w-xl mx-auto">
+          Low spreads, fast execution, 24/7 support. Start with a demo account.
         </p>
-        <div className='flex justify-center gap-4'>
-          <button className='bg-[#00e0c6] text-[#213946] px-6 py-3 rounded-md font-semibold hover:bg-[#00c7b0] transition-colors'>
+        <div className="flex justify-center gap-3 flex-wrap">
+          <Link
+            href="/webtrading"
+            className="inline-flex items-center justify-center bg-[#ff6b00] text-white px-6 py-3 rounded-lg font-medium hover:bg-[#e55a00] transition-colors"
+          >
             Start Trading
-          </button>
-          <button className='border border-white px-6 py-3 rounded-md font-semibold hover:bg-white hover:text-[#213946] transition-colors'>
+          </Link>
+          <Link
+            href="/signup"
+            className="inline-flex items-center justify-center border border-[#2a3441] text-white px-6 py-3 rounded-lg font-medium hover:bg-[#1a1f26] transition-colors"
+          >
             Open Demo Account
-          </button>
+          </Link>
         </div>
       </div>
     </div>

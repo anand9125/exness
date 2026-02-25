@@ -7,53 +7,50 @@ import { randomUUID, UUID } from "crypto";
 import { CustomRequest } from "../middleware/userMiddleware";
 import { getAssetDetails } from "../services/getAssetDetails";
 
-router.post("/open", async (req:CustomRequest, res: Response) => {
-    console.log(req.body)
+router.post("/open", async (req: CustomRequest, res: Response) => {
     let { side, volume, asset, stopLoss, takeProfit, leverage } = req.body;
-    //@ts-ignore
-    const userId = req?.id as UUID
-    console.log(userId)
+    const userId = req?.id as UUID;
+    if (!userId) {
+        res.status(401).json({ message: "Unauthorized" });
+        return;
+    }
+
     volume = new Decimal(volume);
-    stopLoss = new Decimal(stopLoss);
-    takeProfit = new Decimal(takeProfit);
+    stopLoss = stopLoss != null && stopLoss !== "" ? new Decimal(stopLoss) : new Decimal(0);
+    takeProfit = takeProfit != null && takeProfit !== "" ? new Decimal(takeProfit) : new Decimal(0);
     leverage = new Decimal(leverage);
 
-    console.log("Request body:", req.body);
+    const sideNormalized = (side === "sell" || side === "Sell" ? "Sell" : "Buy") as "Buy" | "Sell";
 
     try {
-         const assetDetails = await getAssetDetails(asset) as any;
-            if (!assetDetails) {
-                res.status(400).json({
-                    message: "Invalid asset"
-                });
-                return;
-            }
-            console.log("asset details", assetDetails)
-        const price = side === "buy" ? new Decimal(assetDetails.askPrice) : new Decimal(assetDetails.bidPrice);
-         console.log("price",price)
-        // exposure = volume * price (not dependent on leverage)
+        const assetDetails = await getAssetDetails(asset) as { askPrice?: string; bidPrice?: string; ask_price?: string; bid_price?: string } | null;
+        if (!assetDetails) {
+            res.status(400).json({ message: "Invalid asset or no price data" });
+            return;
+        }
+
+        const price = sideNormalized === "Buy"
+            ? new Decimal(assetDetails.askPrice ?? assetDetails.ask_price ?? 0)
+            : new Decimal(assetDetails.bidPrice ?? assetDetails.bid_price ?? 0);
+
         const exposure = volume.mul(price);
-        // margin required = exposure / leverage
         const margin = exposure.div(leverage);
 
-        console.log("reached here")
         const isEnough = await checkBalance(margin, userId);
         if (!isEnough) {
-              res.status(400).json({
+            res.status(400).json({
                 message: leverage.eq(1) ? "Insufficient balance" : "Insufficient margin"
             });
-             return;
+            return;
         }
-        console.log("user have enough balance")
 
-        // lock required margin from user's USDT balance
         await lockBalance(margin, userId);
 
         const orderId = randomUUID();
         const position = await openPosition(
             orderId,
             userId,
-            side,
+            sideNormalized,
             volume,
             margin,
             stopLoss,
@@ -65,14 +62,12 @@ router.post("/open", async (req:CustomRequest, res: Response) => {
             exposure,
         );
 
-        // DO NOT unlock margin here — margin remains locked until position is closed
         await creditAssets(userId, asset, volume);
 
         res.status(200).json({
             message: "Position opened",
             position
         });
-
     } catch (err) {
         console.error(err);
         res.status(500).json({
@@ -82,57 +77,57 @@ router.post("/open", async (req:CustomRequest, res: Response) => {
 });
 
 
-router.post("/getUSDTBalance",async(req:Request,res:Response)=>{
-    try{
-        const {userId} = req.body;
-        const balance = await getBalance(userId);
-        res.status(200).json({
-            balance
-        })
-    }catch(err){
-        res.status(500).json({
-            message:"Internal server error"
-        })
-    }
-})
-
-router.post("/getAllBalances",async(req:Request,res:Response)=>{
-    try{
-        const {userId} = req.body;
-        const balance = await getAllBalances(userId);
-        res.status(200).json({
-            balance
-        })
-    }catch(err){
-        res.status(500).json({
-            message:"Internal server error"
-        })
-    }
- })
-
-router.post("/closePosition",async(req:Request,res:Response)=>{
-    const {orderId,userId} = req.body;
-    if(!orderId){
-        res.status(400).json({
-            message:"Invalid request"
-        })
-        return
-    }
-    try{
-        const position = await getUserPosition(orderId,userId) ;
-        if(position){
-           const closedPosition = await closePosition(position);
-            res.status(200).json({
-                message:"Success",
-                data:closedPosition
-            })
+router.post("/getUSDTBalance", async (req: CustomRequest, res: Response) => {
+    try {
+        const userId = req.id as UUID;
+        if (!userId) {
+            res.status(401).json({ message: "Unauthorized" });
+            return;
         }
-    }catch(err){
-        res.status(500).json({
-            message:"Internal server error"
-        })
+        const balance = await getBalance(userId);
+        res.status(200).json({ balance });
+    } catch (err) {
+        res.status(500).json({ message: "Internal server error" });
     }
-})
+});
+
+router.post("/getAllBalances", async (req: CustomRequest, res: Response) => {
+    try {
+        const userId = req.id as UUID;
+        if (!userId) {
+            res.status(401).json({ message: "Unauthorized" });
+            return;
+        }
+        const balance = await getAllBalances(userId);
+        res.status(200).json({ balance });
+    } catch (err) {
+        res.status(500).json({ message: "Internal server error" });
+    }
+});
+
+router.post("/closePosition", async (req: CustomRequest, res: Response) => {
+    const { orderId } = req.body;
+    const userId = req.id as UUID;
+    if (!orderId || !userId) {
+        res.status(400).json({ message: "Invalid request" });
+        return;
+    }
+    try {
+        const position = await getUserPosition(orderId, userId);
+        if (position) {
+            const closedPosition = await closePosition(position);
+            if (closedPosition) {
+                res.status(200).json({ message: "Success", data: closedPosition });
+            } else {
+                res.status(500).json({ message: "Failed to close position" });
+            }
+        } else {
+            res.status(404).json({ message: "Position not found" });
+        }
+    } catch (err) {
+        res.status(500).json({ message: "Internal server error" });
+    }
+});
 
 router.get("/getOpenOrder",async(req:CustomRequest,res:Response)=>{
     try{

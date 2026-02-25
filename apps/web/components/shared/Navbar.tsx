@@ -4,87 +4,72 @@ import React from 'react'
 import Link from 'next/link'
 import { TrendingUp, User, LogOut } from 'lucide-react'
 import { useAuth } from '../../lib/AuthContext'
+import { useUserStore } from '../../app/zustand/useUserStore'
 
 const Navbar = () => {
   const { user, isAuthenticated, logout } = useAuth();
+  const logoutStore = useUserStore((s) => s.logout);
 
-  const handleLogout = async () => {
-    await logout();
+  const handleLogout = () => {
+    logout();
+    logoutStore();
   };
 
   return (
-    <div className='w-full flex justify-between items-center p-6 border-b border-[#2a3441] bg-[#141920]'>
-      <Link href="/" className="flex items-center space-x-3">
-        <div className="w-10 h-10 bg-[#ff6b00] rounded-lg flex items-center justify-center">
-          <TrendingUp className="text-white" size={24} />
+    <header className="w-full flex justify-between items-center px-6 py-4 border-b border-[#2a3441] bg-[#141920]">
+      <Link href="/" className="flex items-center gap-3">
+        <div className="w-9 h-9 bg-[#ff6b00] rounded-lg flex items-center justify-center flex-shrink-0">
+          <TrendingUp className="text-white" size={20} />
         </div>
         <div>
-          <div className="text-[#ff6b00] text-2xl font-bold">exness</div>
-          <div className="text-gray-400 text-xs">Trading Simulator</div>
+          <span className="text-[#ff6b00] text-xl font-bold tracking-tight block">exness</span>
+          <span className="text-[#6b7280] text-xs">Trading Simulator</span>
         </div>
       </Link>
-      
-      {/* <nav className="hidden md:flex items-center space-x-8">
-        <Link href="/" className="text-gray-300 hover:text-white transition-colors font-medium">
-          Home
-        </Link>
-        <Link href="/webtrading" className="text-gray-300 hover:text-[#ff6b00] transition-colors font-medium">
-          Trading Platform
-        </Link>
-        <Link href="/markets" className="text-gray-300 hover:text-white transition-colors font-medium">
-          Markets
-        </Link>
-        <Link href="/education" className="text-gray-300 hover:text-white transition-colors font-medium">
-          Education
-        </Link>
-      </nav> */}
-      
-      <div className="flex items-center space-x-4">
+
+      <div className="flex items-center gap-3">
         {isAuthenticated ? (
           <>
-            <div className="flex items-center space-x-3 text-gray-300">
-              <User size={18} />
-              <span className="font-medium">{user?.username}</span>
-              {user?.balance && (
-                <span className="text-green-400 font-mono">
-                  ${user.balance.toLocaleString()}
-                </span>
+            <div className="flex items-center gap-3 text-[#b0b8c1] text-sm">
+              <User size={16} />
+              <span className="font-medium text-white">{user?.username}</span>
+              {user?.balance != null && (
+                <span className="text-green-400 font-mono tabular-nums">${Number(user.balance).toLocaleString()}</span>
               )}
             </div>
-            <button 
+            <button
               onClick={handleLogout}
-              className='flex items-center space-x-2 bg-[#1a1f26] text-white px-4 py-2 rounded-lg hover:bg-[#2a3441] transition-colors border border-[#2a3441]'
+              className="flex items-center gap-2 bg-[#1a1f26] border border-[#2a3441] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#2a3441] transition-colors"
             >
-              <LogOut size={16} />
-              <span>Sign Out</span>
+              <LogOut size={14} />
+              Sign out
             </button>
           </>
         ) : (
           <>
-            <Link 
+            <Link
               href="/login"
-              className='bg-[#1a1f26] text-white px-6 py-2 rounded-lg hover:bg-[#2a3441] transition-colors border border-[#2a3441] font-medium'
+              className="bg-[#1a1f26] border border-[#2a3441] text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-[#2a3441] transition-colors"
             >
-              Sign In
+              Sign in
             </Link>
-            <Link 
+            <Link
               href="/signup"
-              className='bg-[#ff6b00] text-white px-6 py-2 rounded-lg hover:bg-[#e55a00] transition-colors font-medium'
+              className="bg-[#ff6b00] text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-[#e55a00] transition-colors"
             >
-              Sign Up
+              Sign up
             </Link>
           </>
         )}
-        
-        <Link 
+        <Link
           href="/webtrading"
-          className='bg-[#ff6b00] text-white px-6 py-2 rounded-lg hover:bg-[#e55a00] transition-colors font-medium'
+          className="bg-[#ff6b00] text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-[#e55a00] transition-colors"
         >
           Start Trading
         </Link>
       </div>
-    </div>
-  )
+    </header>
+  );
 }
 
 export default Navbar

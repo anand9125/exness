@@ -3,7 +3,7 @@
 import React, { useEffect, useRef } from 'react'
 import { ChartManager, UpdatedCandleData } from '../../../lib/chartManager';
 import { CandleTick, GlobalTick, WSMessage } from './interfaces';
-import { backendUrl, KLINES_BASE } from '../../../lib/url';
+import { backendUrl, KLINES_BASE, wsUrl } from '../../../lib/url';
 import { useGlobalTickStore, useTickStore } from '../../../app/zustand/store';
 import { useOpenOrders } from '../../../app/zustand/fetchOpenOrder';
 interface KLine{
@@ -111,7 +111,7 @@ const TradeChart = ({ selectedTick, className }: TradeChartProps) => {
 
    useEffect(()=>{
       
-      const ws = new WebSocket(`ws://localhost:8080/${symbol}`);
+      const ws = new WebSocket(`${wsUrl}/${symbol}`);
       ws.onmessage = (event)=>{
         try {
         const msg:CandleTick = JSON.parse(event.data)
@@ -148,28 +148,25 @@ const TradeChart = ({ selectedTick, className }: TradeChartProps) => {
 
 
   return (
-    <div className="flex-1 bg-[#0a0e13] border-r border-[#2a3441] relative max-h-[28rem] ">
-     
-      
-      {/* Chart Container */}
-      <div ref={chartRef} className="w-full h-full" />
-      
-      {/* Chart Controls */}
-      <div className="absolute top-4 left-4 z-10 bg-[#141920]/90 backdrop-blur-sm rounded-lg p-2 border border-[#2a3441]">
-        <div className="flex items-center space-x-2">
-          {['1m', '5m', '15m', '30m'].map((timeframe) => (
-            <button
-              key={timeframe}
-              className="px-3 py-1 text-xs font-medium text-gray-400 hover:text-white hover:bg-[#2a3441] rounded transition-colors"
-              onClick={()=>setInterval(timeframe)}
-            >  
-              {timeframe}
-            </button>
-          ))}
-        </div>
+    <div className="flex-1 bg-[#0a0e13] border-r border-[#2a3441] relative min-h-[24rem]">
+      <div ref={chartRef} className="w-full h-full min-h-[20rem]" />
+      <div className="absolute top-3 left-3 z-10 flex items-center gap-1 bg-[#141920] rounded-lg border border-[#2a3441] p-1">
+        {['1m', '5m', '15m', '30m'].map((timeframe) => (
+          <button
+            key={timeframe}
+            className={`px-3 py-1.5 text-xs font-medium rounded transition-colors ${
+              interval === timeframe
+                ? 'bg-[#ff6b00] text-white'
+                : 'text-[#6b7280] hover:text-white hover:bg-[#2a3441]'
+            }`}
+            onClick={() => setInterval(timeframe)}
+          >
+            {timeframe}
+          </button>
+        ))}
       </div>
     </div>
-  )
+  );
 }
 
 export default TradeChart;

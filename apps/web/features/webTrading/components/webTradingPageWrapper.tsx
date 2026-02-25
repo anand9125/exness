@@ -7,26 +7,18 @@ import TradingPanel from './TradingPanel';
 import Footer from './footer';
 
 const WebTradingPageWrapper = () => {
-  // const [selectedInstrument, setSelectedInstrument] = useState<TradingInstrument | null>(
-  //   mockInstruments.find((instrument: TradingInstrument) => instrument.symbol === 'XAU/USD') || null
-  // );
-  const[selectedTick,setSelectedTick] = useState<string>("BTCUSDT")
+  const [selectedTick, setSelectedTick] = useState<string>('BTCUSDT');
 
   return (
-    <div className="trading-layout flex flex-col h-screen">
+    <div className="trading-layout flex flex-col h-full min-h-screen">
       <TradingHeader />
-      
-      <div className="flex-1 flex overflow-hidden">
-        <InstrumentSidebar setSelectedTick = {setSelectedTick}
-          
-          
-        />
-        <div className="flex-1 flex flex-col">
-          <TradeChart selectedTick={selectedTick}  />
-           <Footer className="" />
+      <div className="flex-1 flex overflow-hidden min-h-0">
+        <InstrumentSidebar setSelectedTick={setSelectedTick} />
+        <div className="flex-1 flex flex-col min-w-0">
+          <TradeChart selectedTick={selectedTick} />
+          <Footer />
         </div>
-        
-        <TradingPanel selectedTick ={selectedTick}/>
+        <TradingPanel selectedTick={selectedTick} />
       </div>
     </div>
   );

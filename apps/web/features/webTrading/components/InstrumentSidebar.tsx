@@ -1,66 +1,50 @@
 "use client";
-import { useEffect, useState } from 'react';
-import { Search, Star } from 'lucide-react';
 
-import { CandleTick, GlobalTick, WSMessage } from './interfaces';
-import { useGlobalTickStore, useTickStore } from '../../../app/zustand/store';
-//import {WebSocket} from 'ws';
+import { useGlobalTickStore } from '../../../app/zustand/store';
+
 interface InstrumentSidebarProps {
   setSelectedTick: (symbol: string) => void;
   className?: string;
 }
 
-const InstrumentSidebar = ({ setSelectedTick, className }: InstrumentSidebarProps) => {
-   
+const InstrumentSidebar = ({ setSelectedTick }: InstrumentSidebarProps) => {
     const globalTick = useGlobalTickStore((state)=>state.gloabalTick)
-    const candleTick  = useTickStore((state)=>state.candleTick)
-  
- 
   return (
-    <div className="w-80 bg-[#141920] border-r border-[#2a3441] flex flex-col h-full">
-      {/* Header */}
+    <div className="w-72 bg-[#141920] border-r border-[#2a3441] flex flex-col h-full">
       <div className="p-4 border-b border-[#2a3441]">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-white font-semibold text-lg">Market Watch</h2>
-          <button className="text-gray-400 hover:text-white transition-colors">
-            <Star size={18} />
-          </button>
-        </div>
+        <h2 className="text-white font-semibold text-sm">Market Watch</h2>
       </div>
-       <div className="w-full rounded-2xl overflow-hidden border border-[#2a3441]">
-    {/* Header */}
-      <div className="px-4 py-3 border-b border-[#2a3441] bg-[#1a1f26]">
-        <div className="grid grid-cols-3 gap-2 text-xs text-gray-400 font-medium">
-          <span>Symbol</span>
-          <span className="text-right">Bid</span>
-          <span className="text-right">Ask</span>
-        </div>
-      </div>
-
-      {/* Rows */}
-      <div className="divide-y divide-[#2a3441] bg-[#0f1318]">
-        {Object.values(globalTick).map((row) => (
-          <div
-            key={row.symbol}
-            onClick={() => setSelectedTick(row.symbol)}
-            className="grid grid-cols-3 gap-2 px-4 py-3 text-sm items-center cursor-pointer hover:bg-[#1c222b] "
-          >
-            <span className="font-medium text-white">{row.symbol}</span>
-
-            <button className="text-right text-blue-400 hover:text-blue-300 cursor-pointer ">
-              {row.bidPrice?.toFixed(2)}
-            </button>
-            <button className="text-right text-yellow-400 hover:text-yellow-300 cursor-pointer">
-              {row.askPrice?.toFixed(2)}
-            </button>
+      <div className="flex-1 overflow-auto trading-scrollbar">
+        <div className="border-b border-[#2a3441] bg-[#1a1f26]">
+          <div className="grid grid-cols-3 gap-2 px-4 py-2.5 text-xs font-medium text-[#6b7280]">
+            <span>Symbol</span>
+            <span className="text-right">Bid</span>
+            <span className="text-right">Ask</span>
           </div>
-        ))}
+        </div>
+        <div className="divide-y divide-[#2a3441]">
+          {Object.values(globalTick).length === 0 ? (
+            <div className="px-4 py-8 text-center text-[#6b7280] text-sm">No symbols yet. Connect to start receiving prices.</div>
+          ) : (
+            Object.values(globalTick).map((row) => (
+              <button
+                key={row.symbol}
+                type="button"
+                onClick={() => setSelectedTick(row.symbol)}
+                className="w-full grid grid-cols-3 gap-2 px-4 py-3 text-sm text-left items-center hover:bg-[#1a1f26] transition-colors border-b border-[#2a3441]/50 last:border-0"
+              >
+                <span className="font-medium text-white truncate">{row.symbol}</span>
+                <span className="text-right font-mono text-[#22c55e] tabular-nums">
+                  {row.bidPrice != null ? Number(row.bidPrice).toFixed(2) : '—'}
+                </span>
+                <span className="text-right font-mono text-[#ef4444] tabular-nums">
+                  {row.askPrice != null ? Number(row.askPrice).toFixed(2) : '—'}
+                </span>
+              </button>
+            ))
+          )}
+        </div>
       </div>
-
-
-    </div>
-
-       
     </div>
   );
 };

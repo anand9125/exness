@@ -1,35 +1,28 @@
 @import "tailwindcss";
 
-/* Exness Trading Theme */
+/* Exness Trading Theme - simple, no gradients */
 :root {
-  /* Background Colors */
   --trading-bg-primary: #0a0e13;
   --trading-bg-secondary: #141920;
   --trading-bg-tertiary: #1a1f26;
-  --trading-bg-hover: #202832;
-  
-  /* Text Colors */
+  --trading-bg-hover: #1e242c;
+
   --trading-text-primary: #ffffff;
   --trading-text-secondary: #b0b8c1;
   --trading-text-muted: #6b7280;
-  
-  /* Border Colors */
+
   --trading-border: #2a3441;
-  --trading-border-light: #3d4853;
-  
-  /* Trading Colors */
+  --trading-border-light: #374151;
+
   --trading-success: #22c55e;
-  --trading-success-bg: rgba(34, 197, 94, 0.1);
+  --trading-success-dim: #16a34a;
   --trading-danger: #ef4444;
-  --trading-danger-bg: rgba(239, 68, 68, 0.1);
-  --trading-warning: #f59e0b;
-  --trading-blue: #3b82f6;
-  --trading-blue-light: #60a5fa;
-  
-  /* Exness Brand Colors */
+  --trading-danger-dim: #dc2626;
+  --trading-warning: #eab308;
+  --trading-blue: #2563eb;
+
   --exness-orange: #ff6b00;
-  --exness-dark: #1a1f26;
-  --exness-gray: #2a3441;
+  --exness-orange-hover: #e55a00;
 }
 
 /* Custom Scrollbar */
@@ -65,7 +58,7 @@
 }
 
 .btn-trading-primary:hover {
-  background: #e55a00;
+  background: var(--exness-orange-hover);
 }
 
 .btn-trading-secondary {

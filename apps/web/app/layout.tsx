@@ -4,6 +4,8 @@ import "./globals.css";
 import ConditionalNavbar from "../components/shared/ConditionalNavbar";
 import { AuthProvider } from "../lib/AuthContext";
 
+export const dynamic = "force-dynamic";
+
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
   variable: "--font-geist-sans",

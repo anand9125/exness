@@ -7,18 +7,18 @@ export interface CustomRequest extends Request {
 }
 
 
-export const userMiddleware = (req: CustomRequest, res: Response, next: any) => {
-    const token = req.headers.authorization;
-    console.log("token",token)
-    console.log(token)
-     if(token){
-      const payload = jwt.verify(token, JWTPASSWORD) as {userId: UUID};
-      req.id = payload.userId;
-      console.log("payload",payload)
-      next();
-    }else{
-      res.status(401).json({
-        message: "Unauthorized",
-      });
+export const userMiddleware = (req: CustomRequest, res: Response, next: NextFunction) => {
+    const authHeader = req.headers.authorization;
+    const token = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : authHeader;
+    if (token) {
+        try {
+            const payload = jwt.verify(token, JWTPASSWORD) as { userId: UUID };
+            req.id = payload.userId;
+            next();
+        } catch {
+            res.status(401).json({ message: "Invalid or expired token" });
+        }
+    } else {
+        res.status(401).json({ message: "Unauthorized" });
     }
 };  

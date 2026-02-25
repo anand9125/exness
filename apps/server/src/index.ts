@@ -23,7 +23,8 @@ app.use("/api/v1/order", userMiddleware , orderRouter);
 
 (async () => {
   await connectredis();
-  app.listen(4000, () => {
-    console.log("Server running on port 4000");
+  const port = parseInt(process.env.PORT || "4000", 10);
+  app.listen(port, "0.0.0.0", () => {
+    console.log(`Server running on port ${port}`);
   });
 })();

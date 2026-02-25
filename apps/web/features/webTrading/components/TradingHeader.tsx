@@ -1,101 +1,84 @@
 
-import { Bell, Settings, User, ChevronDown, LogOut } from 'lucide-react';
+import { Bell, Settings, User, LogOut } from 'lucide-react';
 import { useAuth } from '../../../lib/AuthContext';
+import { useUserStore } from '../../../app/zustand/useUserStore';
 
 const TradingHeader = ({ className }: { className?: string }) => {
   const { user, isAuthenticated, logout } = useAuth();
-  
+  const logoutStore = useUserStore((s) => s.logout);
 
-  const handleLogout = async () => {
-    await logout();
+  const handleLogout = () => {
+    logout();
+    logoutStore();
     window.location.href = '/login';
   };
 
   return (
-    <header className="bg-[#141920] border-b border-[#2a3441] h-16 flex items-center px-6 shadow-lg">
-      {/* Logo and Brand */}
-      <div className='flex justify-between w-full'>
-      <div className="flex items-center space-x-6">
-        <div className="flex items-center space-x-2">
-          <div className="text-[#ff6b00] text-2xl font-bold">exness</div>
-          <div className="bg-[#ff6b00] text-white text-xs px-2 py-1 rounded font-medium">
-            {isAuthenticated ? 'LIVE' : 'DEMO'}
+    <header className="bg-[#141920] border-b border-[#2a3441] h-14 flex items-center px-5">
+      <div className="flex justify-between items-center w-full">
+        <div className="flex items-center gap-6">
+          <div className="flex items-center gap-2">
+            <span className="text-[#ff6b00] text-xl font-bold tracking-tight">exness</span>
+            <span className="bg-[#1a1f26] text-[#b0b8c1] text-xs px-2 py-0.5 rounded border border-[#2a3441] font-medium">
+              {isAuthenticated ? 'LIVE' : 'DEMO'}
+            </span>
           </div>
-        </div>
-        
-        Navigation
-        <nav className="hidden md:flex items-center space-x-6">
-          <button className="text-white hover:text-[#ff6b00] transition-colors text-sm font-medium">
-            Trading
-          </button>
-          <button className="text-gray-400 hover:text-white transition-colors text-sm font-medium">
-            Analytics
-          </button>
-          <button className="text-gray-400 hover:text-white transition-colors text-sm font-medium">
-            Portfolio
-          </button>
-        </nav>
-      </div>
-      
-      
-
-      {/* User Section */}
-      <div className="flex items-center space-x-4 ml-6">
-        <div className="text-right hidden sm:block">
-          <div className="text-gray-400 text-xs">
-            {isAuthenticated ? 'Live Account' : 'Demo Account'}
-          </div>
-          <div className="text-white text-sm font-bold">
-            {user?.balance ? `$${user.balance.toLocaleString()}` : '$10,000.00'}
-          </div>
-        </div>
-        
-        <button className="p-2 text-gray-400 hover:text-white transition-colors">
-          <Bell size={18} />
-        </button>
-        
-        <button className="p-2 text-gray-400 hover:text-white transition-colors">
-          <Settings size={18} />
-        </button>
-        
-        {isAuthenticated ? (
-          <div className="flex items-center space-x-2">
-            <div className="flex items-center space-x-2 cursor-pointer hover:bg-[#1a1f26] px-3 py-2 rounded transition-colors">
-              <div className="w-8 h-8 bg-[#ff6b00] rounded-full flex items-center justify-center">
-                <User size={16} className="text-white" />
-              </div>
-              <span className="text-white text-sm font-medium">{user?.username}</span>
-              <ChevronDown size={16} className="text-gray-400" />
-            </div>
-            <button 
-              onClick={handleLogout}
-              className="p-2 text-gray-400 hover:text-red-400 transition-colors"
-              title="Sign Out"
-            >
-              <LogOut size={18} />
+          <nav className="hidden md:flex items-center gap-1">
+            <button className="text-white px-3 py-1.5 text-sm font-medium rounded hover:bg-[#1a1f26] transition-colors">
+              Trading
             </button>
+            <button className="text-[#6b7280] px-3 py-1.5 text-sm rounded hover:text-white hover:bg-[#1a1f26] transition-colors">
+              Analytics
+            </button>
+            <button className="text-[#6b7280] px-3 py-1.5 text-sm rounded hover:text-white hover:bg-[#1a1f26] transition-colors">
+              Portfolio
+            </button>
+          </nav>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <div className="text-right hidden sm:block mr-2">
+            <div className="text-[#6b7280] text-xs">Balance</div>
+            <div className="text-white text-sm font-semibold tabular-nums">
+              {user?.balance != null ? `$${Number(user.balance).toLocaleString()}` : '$10,000.00'}
+            </div>
           </div>
-        ) : (
-          <div className="flex items-center space-x-2">
-            <a 
-              href="/login"
-              className="text-gray-400 hover:text-white transition-colors text-sm font-medium"
-            >
-              Sign In
-            </a>
-            <a 
-              href="/signup"
-              className="bg-[#ff6b00] hover:bg-[#e55a00] text-white px-4 py-2 rounded font-medium transition-colors"
-            >
-              Sign Up
-            </a>
-          </div>
-        )}
-        
-        <button className="bg-[#ff6b00] hover:bg-[#e55a00] text-white px-4 py-2 rounded font-medium transition-colors">
-          Deposit
-        </button>
-      </div>
+          <button className="p-2 text-[#6b7280] rounded hover:text-white hover:bg-[#1a1f26] transition-colors" aria-label="Notifications">
+            <Bell size={18} />
+          </button>
+          <button className="p-2 text-[#6b7280] rounded hover:text-white hover:bg-[#1a1f26] transition-colors" aria-label="Settings">
+            <Settings size={18} />
+          </button>
+          {isAuthenticated ? (
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded border border-[#2a3441] bg-[#1a1f26]">
+                <div className="w-7 h-7 bg-[#ff6b00] rounded flex items-center justify-center flex-shrink-0">
+                  <User size={14} className="text-white" />
+                </div>
+                <span className="text-white text-sm font-medium max-w-[100px] truncate">{user?.username}</span>
+              </div>
+              <button
+                onClick={handleLogout}
+                className="p-2 text-[#6b7280] rounded hover:text-red-400 hover:bg-[#1a1f26] transition-colors"
+                title="Sign Out"
+              >
+                <LogOut size={18} />
+              </button>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2">
+              <a href="/login" className="text-[#b0b8c1] hover:text-white text-sm font-medium px-3 py-2 transition-colors">
+                Sign In
+              </a>
+              <a href="/signup" className="bg-[#ff6b00] hover:bg-[#e55a00] text-white text-sm font-medium px-4 py-2 rounded transition-colors">
+                Sign Up
+              </a>
+            </div>
+          )}
+          <button className="bg-[#ff6b00] hover:bg-[#e55a00] text-white text-sm font-medium px-4 py-2 rounded transition-colors ml-1">
+            Deposit
+          </button>
+        </div>
       </div>
     </header>
   );

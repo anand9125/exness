@@ -12,46 +12,42 @@ function Footer({ className }: { className?: string }) {
   }, [fetchOpenOrders]);
 
   return (
-    <div className='max-h-full'>
-         <div className={`p-4 ${className}`}>
-        <div className="flex-1 flex flex-col">
-          <div className="flex items-center justify-between pb-4 border-b border-[#2a3441]">
-            <div className="flex space-x-6 pl-4">
-              {['open', 'pending', 'closed'].map((tab) => (
-                <button
-                  key={tab}
-                  onClick={() => setActiveTab(tab as typeof activeTab)}
-                  className={`text-sm capitalize transition-colors ${
-                    activeTab === tab
-                      ? 'text-[#ff6b00] border-b-2 border-[#ff6b00] pb-1 font-medium'
-                      : 'text-gray-400 hover:text-white'
-                  }`}
-                >
-                  {tab}
-                </button>
-              ))}
-            </div>
-            <button className="text-gray-400 hover:text-white transition-colors pr-4">
-              <Settings size={16} />
-            </button>
+    <div className="flex-1 flex flex-col min-h-0">
+      <div className={`p-4 ${className ?? ''}`}>
+        <div className="flex items-center justify-between pb-3 border-b border-[#2a3441] mb-4">
+          <div className="flex gap-6">
+            {(['open', 'pending', 'closed'] as const).map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`text-sm font-medium capitalize transition-colors pb-2 -mb-px border-b-2 ${
+                  activeTab === tab
+                    ? 'text-[#ff6b00] border-[#ff6b00]'
+                    : 'text-[#6b7280] border-transparent hover:text-[#b0b8c1]'
+                }`}
+              >
+                {tab}
+              </button>
+            ))}
           </div>
-
-          {openOrders.length > 0 && activeTab === 'open' ? (
-            <OpenOrdersTable />
-          ) : (
-            <div className="flex-1 flex items-center justify-center p-8">
-              <div className="text-center">
-                <div className="w-16 h-16 bg-[#1a1f26] rounded-full flex items-center justify-center mb-4 mx-auto">
-                  <span className="text-2xl">📊</span>
-                </div>
-                <div className="text-gray-400 text-sm mb-2">No {activeTab} positions</div>
-                <div className="text-gray-500 text-xs">
-                  Your {activeTab} trades will appear here
-                </div>
-              </div>
-            </div>
-          )}
+          <button className="p-1.5 text-[#6b7280] rounded hover:text-white hover:bg-[#1a1f26] transition-colors" aria-label="Settings">
+            <Settings size={16} />
+          </button>
         </div>
+
+        {openOrders.length > 0 && activeTab === 'open' ? (
+          <OpenOrdersTable />
+        ) : (
+          <div className="flex items-center justify-center py-12">
+            <div className="text-center">
+              <div className="w-12 h-12 bg-[#1a1f26] border border-[#2a3441] rounded-lg flex items-center justify-center mb-3 mx-auto text-[#6b7280]">
+                <span className="text-xl">📊</span>
+              </div>
+              <p className="text-[#b0b8c1] text-sm">No {activeTab} positions</p>
+              <p className="text-[#6b7280] text-xs mt-0.5">Your {activeTab} trades will appear here</p>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

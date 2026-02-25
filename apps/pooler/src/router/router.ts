@@ -1,24 +1,21 @@
 import type { Data } from "../type";
 import {pub} from "../connectionredis/connectredis";
 
-const bidPriceIncrementRate = 0.0005;
-const askPriceDecrementRate = 0.0005;
+const bidPriceDecrementRate = 0.0005; // spread: bid below mid
+const askPriceIncrementRate = 0.0005; // ask above mid
 
-export async function scalewebsocket(data:Data){
-    
+export async function scalewebsocket(data: Data) {
     const fetchedPrice = Number(data.p);
-    const bidPrice = fetchedPrice + fetchedPrice * bidPriceIncrementRate;
-    const askPrice = fetchedPrice - fetchedPrice * askPriceDecrementRate;
-   
+    const bidPrice = fetchedPrice - fetchedPrice * bidPriceDecrementRate;
+    const askPrice = fetchedPrice + fetchedPrice * askPriceIncrementRate;
 
     const symbol = data.s;
-    const channel = symbol.replace("USDT","")
-     console.log("New price : ", bidPrice, askPrice,symbol);
-    await pub.publish(channel , JSON.stringify({symbol, askPrice , bidPrice})); //BTC is redis channel
-    console.log("Published to Redis", bidPrice, askPrice);
-    await pub.hSet(`asset:${symbol}`,{ //using the redis hash we can store the data in redis hash HSET automatically overwrites the field with the new value
+    const channel = symbol.replace("USDT", "");
+
+    await pub.publish(channel, JSON.stringify({ symbol, askPrice, bidPrice }));
+    await pub.hSet(`asset:${symbol}`, {
         symbol,
-        askPrice,   
-        bidPrice
-    })
+        askPrice: String(askPrice),
+        bidPrice: String(bidPrice),
+    });
 }

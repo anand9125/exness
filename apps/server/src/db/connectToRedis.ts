@@ -2,7 +2,7 @@ import { createClient, RedisClientType } from "redis";
 // import { pool } from "./db";
 import { sendTradeToServer } from "../services/getAssetDetails";
 export const pub: RedisClientType = createClient({
-  url: process.env.redis_Url || "redis://localhost:6379",
+  url: process.env.REDIS_URL || "redis://localhost:6379",
 });
 
 export async function connectredis(){

@@ -206,12 +206,38 @@ cd frontend && npm run dev
 
 **Production:**
 ```bash
-# Using Docker Compose
-docker-compose up -d
+# Using Docker Compose (see Docker section below)
+docker compose up -d
 
 # Or with PM2
 pm2 start ecosystem.config.js
 ```
+
+### Docker (local & EC2)
+
+All backends and the web app are containerized. Pub/sub uses Redis (no database required).
+
+**Prerequisites:** Docker and Docker Compose.
+
+**Build and run locally:**
+```bash
+# From repo root
+docker compose up --build
+
+# Or run in background
+docker compose up -d --build
+```
+
+**Services:**
+- **Redis** – `localhost:6379` (pub/sub)
+- **pooler** – Binance → Redis (no exposed port)
+- **server** – REST API – http://localhost:4000
+- **ws** – WebSocket – ws://localhost:8080
+- **web** – Next.js – http://localhost:3000
+
+**Env for production (e.g. EC2):** Set in `docker-compose.yml` or a `.env` file:
+- `REDIS_URL` – Redis connection (e.g. `redis://redis:6379` in Docker)
+- `NEXT_PUBLIC_BACKEND_URL` / `NEXT_PUBLIC_WS_URL` – API and WebSocket URLs the browser will use (e.g. your EC2 hostname)
 
 ## 🔄 Data Flow
 

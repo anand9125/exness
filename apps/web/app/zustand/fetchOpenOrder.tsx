@@ -2,7 +2,6 @@
 
 import { create } from "zustand";
 import axios from "axios";
-import { useUserStore } from "./useUserStore";
 import { backendUrl } from "../../lib/url";
 import { UUID } from "crypto";
 
@@ -32,9 +31,7 @@ interface OrderStore {
   setOpenOrders: (orders: Position[]) => void;
 }
 
-export const useOpenOrders = create<OrderStore>((set, get) => {
-
-  const token = localStorage.getItem("token");
+export const useOpenOrders = create<OrderStore>((set) => {
   return {
     openOrders: [],
 
@@ -42,17 +39,16 @@ export const useOpenOrders = create<OrderStore>((set, get) => {
 
     fetchOpenOrders: async () => {
       try {
-        console.log("Fetching Open Orders")
+        const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
         const res = await axios.get<GetOpenOrdersResponse>(`${backendUrl}/order/getOpenOrder`, {
-          headers: { Authorization: `${token}` },
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
         });
 
-        const ordersArray = res.data.position;
-        console.log("Fetched Open Orders:", ordersArray);
-
+        const ordersArray = res.data.position ?? [];
         set({ openOrders: ordersArray });
       } catch (err) {
         console.error("Failed to fetch open orders", err);
+        set({ openOrders: [] });
       }
     },
   };
