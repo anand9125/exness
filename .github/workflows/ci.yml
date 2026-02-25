@@ -6,6 +6,7 @@ on:
       - main
       - master
     paths:
+      - ".github/workflows/ci.yml"
       - "apps/server/**"
       - "apps/ws/**"
       - "apps/pooler/**"
@@ -20,6 +21,7 @@ on:
       - main
       - master
     paths:
+      - ".github/workflows/ci.yml"
       - "apps/server/**"
       - "apps/ws/**"
       - "apps/pooler/**"
@@ -29,6 +31,7 @@ on:
       - "package.json"
       - "package-lock.json"
       - "turbo.json"
+  workflow_dispatch:
 
 jobs:
   lint-and-build:
