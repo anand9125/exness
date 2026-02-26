@@ -14,6 +14,7 @@ RUN npm prune --omit=dev
 FROM node:20-alpine
 WORKDIR /app
 COPY --from=builder /app/apps/pooler/package.json ./
+COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/apps/pooler/node_modules ./node_modules
 COPY --from=builder /app/apps/pooler/dist ./dist
 ENV NODE_ENV=production

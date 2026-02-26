@@ -14,6 +14,7 @@ RUN npm prune --omit=dev
 FROM node:20-alpine
 WORKDIR /app
 COPY --from=builder /app/apps/ws/package.json ./
+COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/apps/ws/node_modules ./node_modules
 COPY --from=builder /app/apps/ws/dist ./dist
 ENV NODE_ENV=production
