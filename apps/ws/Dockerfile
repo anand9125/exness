@@ -7,15 +7,13 @@ COPY packages packages
 RUN npm ci
 
 WORKDIR /app/apps/ws
-RUN npm install
 RUN npm run build
-RUN npm prune --omit=dev
 
 FROM node:20-alpine
 WORKDIR /app
+# Copy only app package.json and dist; install prod deps here so ws + redis are guaranteed
 COPY --from=builder /app/apps/ws/package.json ./
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/apps/ws/node_modules ./node_modules
+RUN npm install --omit=dev
 COPY --from=builder /app/apps/ws/dist ./dist
 ENV NODE_ENV=production
 EXPOSE 8080
